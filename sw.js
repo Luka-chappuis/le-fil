@@ -1,5 +1,5 @@
 // Le fil : service worker (notifications appli fermée, ouverture hors ligne de la page)
-const CACHE = "le-fil-v5";
+const CACHE = "le-fil-v6";
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./", "./index.html", "./manifest.webmanifest"])).catch(() => {}));
@@ -18,7 +18,8 @@ self.addEventListener("fetch", (e) => {
   if (e.request.mode !== "navigate") return;
   e.respondWith((async () => {
     try {
-      const r = await fetch(e.request);
+      // Toujours redemander la page au serveur (pas de copie périmée du navigateur)
+      const r = await fetch(e.request, { cache: "no-cache" });
       const c = await caches.open(CACHE);
       c.put("./index.html", r.clone());
       return r;
