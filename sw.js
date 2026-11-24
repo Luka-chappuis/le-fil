@@ -1,5 +1,5 @@
 // Le fil : service worker (notifications appli fermée, ouverture hors ligne de la page)
-const CACHE = "le-fil-v4";
+const CACHE = "le-fil-v5";
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./", "./index.html", "./manifest.webmanifest"])).catch(() => {}));
