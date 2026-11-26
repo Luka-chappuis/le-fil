@@ -44,6 +44,7 @@ class Serveur:
         self.sockets, self.requetes, self.erreurs = [], [], []
         self.reactions, self.lectures, self.taches, self.appels_assistant, self.abonnements = [], [], [], [], []
         self.refus_jeton = 0
+        self.diffusions, self.modifs, self.coupure = [], [], False
         self.deconnexions = []
         self.mots, self.reglages, self.fichiers_retires = [], [], []
 
@@ -73,6 +74,8 @@ class Serveur:
     def repondre(self, route):
         req = route.request
         url, methode = req.url, req.method
+        if self.coupure:
+            return route.abort("internetdisconnected")
         self.requetes.append(methode + " " + url.replace(HOTE, ""))
         entetes = {"access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "*"}
         def js(corps, statut=200):
@@ -102,9 +105,19 @@ class Serveur:
                 nouveau = {"id": max([m["id"] for m in self.messages] + [0]) + 1, "sender": LUKA, "body": None, "file_path": None,
                            "file_name": None, "file_size": None, "file_type": None,
                            "created_at": time.strftime("%Y-%m-%dT%H:%M:%S+00:00", time.gmtime())}
+                if donnees.get("client_id") and any(m.get("client_id") == donnees["client_id"] for m in self.messages):
+                    return js({"code": "23505", "message": "doublon"}, 409)
                 nouveau.update(donnees)
                 self.messages.append(nouveau)
                 return js(nouveau, 201)
+            if methode == "PATCH":
+                ident = int(url.split("id=eq.")[1].split("&")[0])
+                d = json.loads(req.post_data)
+                for m in self.messages:
+                    if m["id"] == ident:
+                        m.update(d); m["edited_at"] = "2026-11-26T16:00:00+00:00"; self.modifs.append(d)
+                        return js(m)
+                return js({"message": "introuvable"}, 404)
             if methode == "DELETE":
                 ident = int(url.split("id=eq.")[1].split("&")[0])
                 self.messages[:] = [m for m in self.messages if m["id"] != ident]
@@ -212,7 +225,11 @@ class Serveur:
             ws.send(json.dumps({"topic": sujet, "event": evenement, "payload": charge, "ref": ref, "join_ref": join_ref}))
 
     def recu(self, ws, brut):
+        if isinstance(brut, (bytes, bytearray)):   # diffusion binaire (« écrit… »)
+            self.diffusions.append(bytes(brut)); return
         m = json.loads(brut)
+        if (m.get("event") if isinstance(m, dict) else (m[3] if len(m) > 3 else None)) == "broadcast":
+            self.diffusions.append(brut)
         if isinstance(m, list):
             ws._tableau = True
             join_ref, ref, sujet, evenement, charge = m

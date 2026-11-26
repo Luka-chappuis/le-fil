@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#EDF2F1">
+<meta name="theme-color" content="#EDF2F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1B1E" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Le fil">
@@ -493,8 +495,108 @@ button { cursor: pointer; }
   @keyframes magie-doux { 0% { opacity: 0; } 15% { opacity: 1; } 72% { opacity: 1; } 100% { opacity: 0; } }
 }
 
+/* ---------- v8 : photos, réponses, vocaux, recherche, envoi différé ---------- */
+.bulle.photo { padding: 4px; background: none; box-shadow: none; }
+.ligne.moi .bulle.photo { background: none; color: var(--encre); }
+.photo-bouton { display: block; border: 0; padding: 0; background: var(--trait); border-radius: 11px; overflow: hidden; cursor: zoom-in; }
+.photo-bouton img { display: block; max-width: min(100%, 300px); max-height: 340px; min-width: 120px; min-height: 90px; object-fit: cover; }
+.photo-bouton img:not([src]) { width: 240px; height: 180px; }
+.bulle.photo .legende { margin: 6px 8px 2px; }
+.bulle.vocal { padding: 8px 10px; white-space: normal; }
+.bulle.vocal audio { display: block; width: min(280px, 70vw); height: 40px; }
+.citation {
+  display: block; width: 100%; text-align: left; border: 0; margin: 0 0 6px; padding: 4px 9px;
+  border-left: 3px solid var(--fil); border-radius: 4px; background: rgba(18, 38, 43, .05);
+  font-size: 13.5px; line-height: 1.35; color: inherit; white-space: normal;
+}
+.ligne.moi .citation { background: rgba(255, 255, 255, .14); border-left-color: rgba(255, 255, 255, .7); }
+.citation strong { display: block; font-size: 12.5px; }
+.citation span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; opacity: .85; }
+.meta .modifie { font-style: italic; margin-left: 4px; }
+.ligne.surligne .bulle { animation: surligne 2s ease; }
+@keyframes surligne { 0%, 60% { box-shadow: 0 0 0 3px var(--fil); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.ligne.pas-envoye .bulle { opacity: .6; }
+.ligne.pas-envoye .meta { color: var(--alerte); }
+.bandeau {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding: 6px 6px 6px 12px;
+  border-left: 3px solid var(--fil); border-radius: 8px; background: var(--papier); box-shadow: inset 0 0 0 1px var(--trait);
+  font-size: 14px;
+}
+.bandeau-texte { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bandeau-texte strong { margin-right: 6px; }
+.pied { position: relative; min-width: 0; }
+.app { grid-template-columns: minmax(0, 1fr); }
+.bandeau { min-width: 0; }
+.ecrit { position: absolute; left: 18px; top: -26px; margin: 0; padding: 2px 10px; border-radius: 999px; background: var(--brume); font-size: 13px; color: var(--doux); }
+.ecrit::after { content: "…"; display: inline-block; width: 1em; animation: points 1.2s steps(4) infinite; overflow: hidden; vertical-align: bottom; }
+@keyframes points { 0% { width: 0; } 100% { width: 1.1em; } }
+.zone-texte textarea { padding-right: 84px; }
+.zone-texte #ouvrir-emojis { right: 41px; }
+.zone-texte #micro { position: absolute; right: 5px; bottom: 5px; }
+.enregistrement { display: grid; grid-template-columns: auto 1fr auto auto; gap: 8px; align-items: center; min-height: 46px; }
+.enregistrement-point { width: 12px; height: 12px; border-radius: 50%; background: var(--fil); margin-left: 8px; animation: clignote 1s ease infinite alternate; }
+@keyframes clignote { from { opacity: 1; } to { opacity: .25; } }
+.enregistrement-duree { font-variant-numeric: tabular-nums; font-weight: 600; }
+.visionneuse { position: fixed; inset: 0; z-index: 30; background: rgba(5, 14, 16, .92); display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.visionneuse-barre { display: flex; justify-content: flex-end; gap: 8px; padding: calc(10px + env(safe-area-inset-top)) 12px 10px; }
+.visionneuse-barre button { border: 0; border-radius: 9px; padding: 8px 14px; background: rgba(255, 255, 255, .14); color: #fff; font-weight: 600; }
+.visionneuse-barre button:hover { background: rgba(255, 255, 255, .24); }
+.visionneuse img { width: 100%; height: 100%; object-fit: contain; padding: 0 12px calc(12px + env(safe-area-inset-bottom)); }
+.recherche-champ { display: flex; gap: 8px; margin-bottom: 14px; }
+.recherche-champ input { flex: 1; min-width: 0; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--trait); background: var(--papier); font-size: 17px; }
+.recherche-champ input:focus-visible { outline-offset: 0; border-color: var(--lac); }
+.resultats { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.resultats button {
+  width: 100%; text-align: left; border: 0; border-radius: 12px; padding: 10px 14px;
+  background: var(--papier); box-shadow: inset 0 0 0 1px var(--trait); display: grid; gap: 2px;
+}
+.resultats button:hover { box-shadow: inset 0 0 0 1.5px var(--lac); }
+.resultat-meta { font-size: 13px; color: var(--doux); }
+.resultat-texte { overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.resultat-texte mark { background: #FFE8A3; color: inherit; border-radius: 3px; }
+.recherche-etat { color: var(--doux); margin: 8px 2px; }
+
+/* ---------- Mode sombre (suit le réglage de l'appareil) ---------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --brume: #0F1B1E;
+    --papier: #182A2E;
+    --encre: #E3ECEA;
+    --lac: #2F8A9C;
+    --lac-fonce: #3A9DB0;
+    --fil: #E5485A;
+    --doux: #9AAEB2;
+    --trait: #2A3F44;
+    --alerte: #FF7A86;
+  }
+  .ligne.moi .bulle { background: #1F6575; }
+  .bouton-second:hover, .fichier-actions button:hover, .calc-touches button:hover, .image-tuile:hover { background: #22383D; }
+  .bouton-discret:hover, .bouton-icone:hover, .choix-reaction button:hover { background: rgba(255, 255, 255, .07); }
+  .onglets { background: rgba(255, 255, 255, .06); }
+  .ligne.autre .bulle a, .resultats .resultat-texte a { color: #7CC8D6; }
+  .citation { background: rgba(255, 255, 255, .06); }
+  .redac-sortie del { background: #4A1F26; }
+  .redac-sortie ins, .redac-fautes .avant-apres ins { color: #7DDCAE; background: #173B2C; }
+  .redac-fautes .avant-apres ins { background: none; }
+  .resultat-texte mark { background: #6B5414; }
+  .avis { background: #E3ECEA; color: #0F1B1E; }
+  @keyframes voile {
+    0%   { background: rgba(15, 27, 30, 0); }
+    12%  { background: rgba(15, 27, 30, .88); }
+    72%  { background: rgba(15, 27, 30, .88); }
+    100% { background: rgba(15, 27, 30, 0); }
+  }
+}
+
 /* ---------- Écrans étroits : le fil passe à gauche ---------- */
 @media (max-width: 700px) {
+  .ecrit { left: 52px; }
+  .zone-texte textarea { padding-right: 70px; padding-left: 12px; }
+  .zone-texte .bouton-icone { width: 32px; }
+  .zone-texte #ouvrir-emojis { right: 36px; }
+  .zone-texte #micro { right: 4px; }
+  .photo-bouton img { max-width: min(100%, 260px); }
   .entete { grid-template-columns: auto 1fr; padding: 8px 10px 8px 14px; }
   .barre-outils { justify-content: flex-start; margin: 2px -10px -9px -14px; padding: 0 6px; }
   .zone-outils { padding: 8px 10px 0; }
@@ -600,6 +702,9 @@ button { cursor: pointer; }
     <h1 class="entete-titre">Le fil</h1>
     <div class="entete-droite">
       <span class="presence" id="presence" data-etat="absent"><span class="presence-point"></span><span class="presence-texte" id="presence-texte"></span></span>
+      <button class="bouton-icone" id="ouvrir-recherche" type="button" aria-label="Rechercher dans le fil" title="Rechercher">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      </button>
       <button class="bouton-icone" id="ouvrir-reglages" type="button" aria-label="Réglages" title="Réglages">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
       </button>
@@ -736,6 +841,23 @@ button { cursor: pointer; }
     </div>
   </section>
 
+  <section class="redac" id="vue-recherche" aria-label="Recherche" hidden>
+    <div class="redac-tete">
+      <button class="bouton-discret" id="recherche-retour" type="button">Retour au fil</button>
+      <h2>Recherche</h2>
+      <span></span>
+    </div>
+    <div class="reglages-corps">
+      <form class="recherche-champ" id="recherche-form" role="search">
+        <label class="visuellement-cache" for="recherche-saisie">Mot à chercher</label>
+        <input id="recherche-saisie" type="search" autocomplete="off" placeholder="Un mot, un nom de fichier…" maxlength="100">
+        <button class="bouton" type="submit">Chercher</button>
+      </form>
+      <p class="recherche-etat" id="recherche-etat" aria-live="polite"></p>
+      <ul class="resultats" id="resultats"></ul>
+    </div>
+  </section>
+
   <section class="redac" id="vue-reglages" aria-label="Réglages" hidden>
     <div class="redac-tete">
       <button class="bouton-discret" id="reglages-retour" type="button">Retour au fil</button>
@@ -866,7 +988,20 @@ button { cursor: pointer; }
         <div class="panneau-corps" id="volet-emojis"></div>
       </section>
 
+      <p class="ecrit" id="ecrit" aria-live="polite" hidden></p>
+      <div class="bandeau" id="bandeau" hidden>
+        <span class="bandeau-texte" id="bandeau-texte"></span>
+        <button class="bouton-icone" id="bandeau-fermer" type="button" aria-label="Annuler">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
       <div class="en-attente" id="en-attente" hidden></div>
+      <div class="enregistrement" id="enregistrement" hidden>
+        <span class="enregistrement-point"></span>
+        <span><span class="enregistrement-duree" id="enregistrement-duree">0:00</span> · Enregistrement du message vocal</span>
+        <button class="bouton-second" type="button" id="vocal-annuler">Annuler</button>
+        <button class="bouton" type="button" id="vocal-envoyer">Envoyer</button>
+      </div>
       <form class="saisie" id="saisie">
         <button type="button" class="carre" id="joindre" aria-label="Joindre un fichier" title="Joindre un fichier">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.4 11.1l-9.2 9.2a6 6 0 01-8.5-8.5l9.2-9.2a4 4 0 015.7 5.7l-9.2 9.1a2 2 0 01-2.8-2.8l8.5-8.5"/></svg>
@@ -876,6 +1011,9 @@ button { cursor: pointer; }
           <textarea id="texte" rows="1" maxlength="4000" placeholder="Écrire un message"></textarea>
           <button type="button" class="bouton-icone" id="ouvrir-emojis" aria-label="Émojis et images" title="Émojis et images" aria-expanded="false">
             <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 007 0"/><path d="M9 9.5v.5M15 9.5v.5"/></svg>
+          </button>
+          <button type="button" class="bouton-icone" id="micro" aria-label="Enregistrer un message vocal" title="Message vocal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>
           </button>
         </div>
         <button class="bouton" type="submit" id="envoyer" aria-label="Envoyer">
@@ -889,6 +1027,13 @@ button { cursor: pointer; }
   </footer>
 </div>
 
+<div class="visionneuse" id="visionneuse" role="dialog" aria-label="Photo" hidden>
+  <div class="visionneuse-barre">
+    <button type="button" id="visionneuse-telecharger">Télécharger</button>
+    <button type="button" id="visionneuse-fermer">Fermer</button>
+  </div>
+  <img id="visionneuse-image" alt="">
+</div>
 <div class="avis" id="avis" role="status" hidden></div>
 <div class="depot" id="depot" hidden>Dépose pour joindre au fil</div>
 
@@ -984,8 +1129,13 @@ button { cursor: pointer; }
     mode: "connexion",
     envoiEnCours: false,
     volet: "calc",
-    reformulation: false    // l'aide à la reformulation est-elle configurée côté serveur ?
+    reformulation: false,   // l'aide à la reformulation est-elle configurée côté serveur ?
+    citations: new Map(),   // messages plus anciens cités par une réponse
+    reponse: null,          // message auquel on répond
+    edition: null,          // message en cours de modification
+    fileAttente: []         // messages écrits hors connexion, pas encore partis
   };
+  var CLE_FILE = "le-fil-file-attente";
 
   function $(id) { return document.getElementById(id); }
   function el(balise, classe, texte) {
@@ -1155,6 +1305,7 @@ button { cursor: pointer; }
     await delai(chargerMembres(), 12000);
     if (!etat.membres.has(etat.moi)) { montrer("exclu"); return; }
     await delai(synchroniser(true), 12000);
+    try { etat.fileAttente = JSON.parse((await memoire.getItem(CLE_FILE)) || "[]") || []; } catch (e) { etat.fileAttente = []; }
     try { await delai(chargerDecor(), 8000); } catch (e) {}
     try { await delai(importerMotsOrigine().then(chargerMotsMagiques), 15000); } catch (e) {}
     montrer("fil");
@@ -1168,6 +1319,7 @@ button { cursor: pointer; }
       if (!etat.enDirect && document.visibilityState === "visible") synchroniser().catch(function () {});
     }, 20000);
     if (!ouvrirRedactionDemandee()) $("texte").focus();
+    viderFile();
   }
 
   async function quitter() {
@@ -1175,6 +1327,11 @@ button { cursor: pointer; }
     await desactiverPush();
     fermerRedaction();
     fermerReglages();
+    fermerRecherche();
+    fermerBandeau();
+    arreterVocal(true);
+    etat.fileAttente = []; etat.citations.clear(); medias.clear(); urls.cache.clear();
+    try { await memoire.removeItem(CLE_FILE); } catch (e) {}
     magie.liste = []; magie.urls = {};
     if (etat.canal) { try { await sb.removeChannel(etat.canal); } catch (e) {} etat.canal = null; }
     try { await sb.auth.signOut({ scope: "local" }); } catch (e) {}
@@ -1212,6 +1369,18 @@ button { cursor: pointer; }
       carte.get(x.message_id).push({ user_id: x.user_id, emoji: x.emoji });
     });
     etat.reactions = carte;
+    await chargerCitations();
+  }
+  // Messages cités par une réponse mais pas encore chargés (plus anciens)
+  async function chargerCitations() {
+    var manquants = [];
+    etat.messages.forEach(function (m) {
+      if (m.reply_to && !etat.messages.has(m.reply_to) && !etat.citations.has(m.reply_to) && manquants.indexOf(m.reply_to) === -1) manquants.push(m.reply_to);
+    });
+    if (!manquants.length) return;
+    var r = await sb.from("messages").select("id, sender, body, file_path, file_name, file_type").in("id", manquants.slice(0, 200));
+    if (r.error) return;
+    r.data.forEach(function (m) { etat.citations.set(m.id, m); });
   }
 
   // Recharge les messages les plus récents et réconcilie avec ce qui est affiché.
@@ -1253,7 +1422,9 @@ button { cursor: pointer; }
     etat.reactions.forEach(function (liste, id) { r.push(id + ":" + liste.map(function (x) { return x.user_id + x.emoji; }).sort().join("")); });
     var l = [];
     etat.lectures.forEach(function (v, k) { l.push(k + "=" + v); });
-    return Array.from(etat.messages.keys()).sort(function (a, b) { return a - b; }).join(",") + "|" + r.sort().join(";") + "|" + l.sort().join(";");
+    var ms = Array.from(etat.messages.values()).sort(function (a, b) { return a.id - b.id; })
+      .map(function (m) { return m.id + (m.edited_at || ""); });
+    return ms.join(",") + "|" + r.sort().join(";") + "|" + l.sort().join(";");
   }
 
   async function chargerPlusAnciens() {
@@ -1323,7 +1494,17 @@ button { cursor: pointer; }
     var contenu = el("div", "contenu");
     var bulle = el("div", "bulle");
 
-    if (m.file_path) {
+    if (m.reply_to) bulle.appendChild(construireCitation(m.reply_to));
+    var estPhoto = /^image\/(png|jpeg|gif|webp)$/.test(m.file_type || "");
+    var estVocal = /^audio\//.test(m.file_type || "");
+    if (m.file_path && estPhoto) {
+      bulle.classList.add("photo");
+      bulle.appendChild(noeudMedia(m, "photo"));
+      if (m.body) { var legP = el("div", "legende"); remplirTexte(legP, m.body); bulle.appendChild(legP); }
+    } else if (m.file_path && estVocal) {
+      bulle.classList.add("vocal");
+      bulle.appendChild(noeudMedia(m, "vocal"));
+    } else if (m.file_path) {
       var fichier = el("div", "fichier");
       fichier.appendChild(el("div", "fichier-type", (extension(m.file_name) || "doc").slice(0, 4)));
       var infos = el("div");
@@ -1381,8 +1562,28 @@ button { cursor: pointer; }
 
     var meta = el("div", "meta");
     var qui = aMoi ? "Toi" : (etat.membres.get(m.sender) || "…");
+    if (m.enAttente) {
+      ligne.classList.add("pas-envoye");
+      meta.appendChild(el("span", null, "Pas encore envoyé : il partira au retour de la connexion"));
+      var bAnnuler = el("button", "bouton-discret", "Annuler");
+      bAnnuler.type = "button";
+      bAnnuler.addEventListener("click", function () {
+        etat.fileAttente = etat.fileAttente.filter(function (x) { return x.client_id !== m.client_id; });
+        sauverFile(); afficherMessages("auto");
+      });
+      meta.appendChild(bAnnuler);
+      contenu.appendChild(meta);
+      ligne.appendChild(contenu);
+      return ligne;
+    }
     meta.appendChild(el("span", null, qui + ", " + fmtHeure.format(new Date(m.created_at))));
+    if (m.edited_at) meta.appendChild(el("span", "modifie", "modifié"));
     if (aMoi && m.id === dernierVu) meta.appendChild(el("span", "vu", "Vu"));
+
+    var bRepondre = el("button", "bouton-discret", "Répondre");
+    bRepondre.type = "button";
+    bRepondre.addEventListener("click", function () { commencerReponse(m); });
+    meta.appendChild(bRepondre);
 
     var bReagir = el("button", "bouton-discret", "Réagir");
     bReagir.type = "button";
@@ -1400,6 +1601,12 @@ button { cursor: pointer; }
     });
     meta.appendChild(bReagir);
 
+    if (aMoi && !m.file_path && m.body && !imageDuMessage(m.body)) {
+      var bModif = el("button", "bouton-discret", "Modifier");
+      bModif.type = "button";
+      bModif.addEventListener("click", function () { commencerEdition(m); });
+      meta.appendChild(bModif);
+    }
     if (aMoi) {
       var bSuppr = el("button", "bouton-discret", "Supprimer");
       bSuppr.type = "button";
@@ -1464,6 +1671,19 @@ button { cursor: pointer; }
       fragment.appendChild(construireMessage(m, dernierVu));
     });
 
+    // Messages écrits hors connexion, pas encore partis
+    var envoyes = new Set();
+    liste.forEach(function (m) { if (m.client_id) envoyes.add(m.client_id); });
+    etat.fileAttente.forEach(function (x) {
+      if (envoyes.has(x.client_id)) return;
+      var d = new Date(x.created_at);
+      if (cleJour(d) !== jourCourant) { jourCourant = cleJour(d); fragment.appendChild(el("div", "jour", libelleJour(d))); }
+      fragment.appendChild(construireMessage({
+        id: "attente-" + x.client_id, client_id: x.client_id, sender: etat.moi, body: x.body,
+        reply_to: x.reply_to, created_at: x.created_at, enAttente: true
+      }, null));
+    });
+
     piste.replaceChildren(fragment);
     if (defilement === "bas" || (defilement === "auto" && etaitEnBas)) flux.scrollTop = flux.scrollHeight;
     else if (defilement === "garder") flux.scrollTop = positionAvant + (flux.scrollHeight - hauteurAvant);
@@ -1509,9 +1729,18 @@ button { cursor: pointer; }
   function majTitre() {
     document.title = (etat.nonLus > 0 ? "(" + etat.nonLus + ") " : "") + "Le fil";
     $("icone").href = etat.nonLus > 0 ? ICONE_ALERTE : ICONE_NORMALE;
+    pastilleAppli(etat.nonLus);
+  }
+  // Pastille de non-lus sur l'icône de l'appli installée
+  function pastilleAppli(n) {
+    try {
+      if (n > 0 && navigator.setAppBadge) navigator.setAppBadge(n).catch(function () {});
+      else if (!n && navigator.clearAppBadge) navigator.clearAppBadge().catch(function () {});
+    } catch (e) {}
   }
   function retourAuFil() {
     if (etat.nonLus) { etat.nonLus = 0; majTitre(); }
+    else pastilleAppli(0);
     if (etat.moi && !$("vue-fil").hidden) { marquerLu(); }
   }
   document.addEventListener("visibilitychange", function () {
@@ -1519,6 +1748,7 @@ button { cursor: pointer; }
       retourAuFil();
       if (etat.moi && !$("vue-fil").hidden) {
         synchroniser().catch(function () {});
+        viderFile();
         if (Date.now() - magie.urlsDate > 12 * 3600 * 1000) chargerMotsMagiques();
       }
     }
@@ -1900,6 +2130,7 @@ button { cursor: pointer; }
     fermerPanneau();
     basculerMenuNotifs(false);
     fermerRedaction();
+    fermerRecherche();
     $("vue-reglages").hidden = false;
     chargerMotsMagiques();
     $("mot-saisie").focus();
@@ -2043,13 +2274,29 @@ button { cursor: pointer; }
         var m = p.new;
         if (!m || etat.messages.has(m.id)) return;
         etat.messages.set(m.id, m);
+        if (m.client_id && etat.fileAttente.some(function (x) { return x.client_id === m.client_id; })) {
+          etat.fileAttente = etat.fileAttente.filter(function (x) { return x.client_id !== m.client_id; });
+          sauverFile();
+        }
+        if (m.sender !== etat.moi) cacherEcrit();
         afficherMessages("auto");
+        if (m.reply_to && !etat.messages.has(m.reply_to)) chargerCitations().then(function () { afficherMessages("auto"); });
         signalerArrivee(m);
         if (m.sender !== etat.moi && m.body) jouerMagie(m.body);
       })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages" }, function (p) {
+        var m = p.new;
+        if (!m || !etat.messages.has(m.id)) return;
+        etat.messages.set(m.id, m);
+        afficherMessages("auto");
+      })
+      .on("broadcast", { event: "ecrit" }, function (p) {
+        var qui = p && p.payload && p.payload.qui;
+        if (qui && qui !== etat.moi) montrerEcrit(qui);
+      })
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "messages" }, function (p) {
         var id = p.old && p.old.id;
-        if (id != null && etat.messages.delete(id)) { etat.reactions.delete(id); afficherMessages("auto"); }
+        if (id != null && etat.messages.delete(id)) { etat.reactions.delete(id); medias.delete(id); afficherMessages("auto"); }
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "members" }, function () {
         chargerMembres().then(function () { afficherEntete(); afficherMessages("auto"); }).catch(function () {});
@@ -2079,6 +2326,7 @@ button { cursor: pointer; }
           $("etat-liaison").hidden = true;
           canal.track({ depuis: Date.now() });
           synchroniser().catch(function () {});
+          viderFile();
         } else if (statut === "CHANNEL_ERROR" || statut === "TIMED_OUT" || statut === "CLOSED") {
           etat.enDirect = false;
           etat.autreEnLigne = false;
@@ -2124,7 +2372,9 @@ button { cursor: pointer; }
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
     var o = new Uint8Array(16);
     crypto.getRandomValues(o);
-    return Array.from(o, function (x) { return x.toString(16).padStart(2, "0"); }).join("");
+    o[6] = (o[6] & 15) | 64; o[8] = (o[8] & 63) | 128;
+    var h = Array.from(o, function (x) { return x.toString(16).padStart(2, "0"); }).join("");
+    return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20);
   }
 
   async function insererMessage(ligne) {
@@ -2134,7 +2384,9 @@ button { cursor: pointer; }
     afficherMessages("bas");
   }
 
-  async function envoyerFichier(fichier) {
+  async function envoyerFichier(fichier, extra) {
+    fichier = await reduirePhoto(fichier);
+    if (fichier.size > TAILLE_MAX) throw new Error("trop gros");
     var ext = extension(fichier.name);
     var chemin = etat.moi + "/" + identifiantUnique() + (ext ? "." + ext : "");
     var depot = await sb.storage.from(SEAU).upload(chemin, fichier, {
@@ -2142,12 +2394,12 @@ button { cursor: pointer; }
     });
     if (depot.error) throw depot.error;
     try {
-      await insererMessage({
+      await insererMessage(Object.assign({
         file_path: chemin,
         file_name: (fichier.name || "Fichier").slice(0, 255),
         file_size: fichier.size,
         file_type: fichier.type || "application/octet-stream"
-      });
+      }, extra || {}));
     } catch (e) {
       await sb.storage.from(SEAU).remove([chemin]);
       throw e;
@@ -2164,19 +2416,36 @@ button { cursor: pointer; }
     bouton.disabled = true;
     $("envoyer-texte").textContent = "Envoi…";
     try {
+      if (etat.edition) {
+        await enregistrerModification(texte);
+        return;
+      }
+      var reponse = etat.reponse ? etat.reponse.id : null;
       if (texte) {
-        await insererMessage({ body: texte });
+        var ligne = { body: texte, client_id: identifiantUnique() };
+        if (reponse) ligne.reply_to = reponse;
+        try {
+          await insererMessage(ligne);
+        } catch (e) {
+          if (!estCoupure(e)) throw e;
+          mettreEnFile(ligne);
+        }
         champ.value = "";
         ajusterHauteur();
         jouerMagie(texte);
       }
       while (etat.enAttente.length) {
-        await envoyerFichier(etat.enAttente[0]);
+        await envoyerFichier(etat.enAttente[0], !texte && reponse ? { reply_to: reponse } : null);
+        reponse = null;
         etat.enAttente.shift();
         afficherEnAttente();
       }
+      fermerBandeau();
     } catch (e) {
-      avis("L'envoi a échoué. Vérifie ta connexion internet et réessaie.");
+      if (texte && !champ.value) fermerBandeau();
+      avis(e && e.message === "trop gros" ? "Ce fichier dépasse la limite de 20 Mo."
+        : etat.enAttente.length ? "Les fichiers ne sont pas partis : ils restent prêts, réessaie quand la connexion revient."
+        : "L'envoi a échoué. Vérifie ta connexion internet et réessaie.");
     } finally {
       etat.envoiEnCours = false;
       bouton.disabled = false;
@@ -2213,7 +2482,8 @@ button { cursor: pointer; }
   function ajouterFichiers(fichiers) {
     Array.from(fichiers || []).forEach(function (f) {
       if (!f.size) { avis("« " + f.name + " » est vide ou n'est pas un fichier : pour un dossier, envoie-le en .zip."); return; }
-      if (f.size > TAILLE_MAX) { avis("« " + f.name + " » dépasse la limite de 20 Mo."); return; }
+      var reductible = /^image\/(jpeg|heic|heif|webp|png)$/.test(f.type) && f.size < 60 * 1024 * 1024;
+      if (f.size > TAILLE_MAX && !reductible) { avis("« " + f.name + " » dépasse la limite de 20 Mo."); return; }
       etat.enAttente.push(f);
     });
     afficherEnAttente();
@@ -2292,8 +2562,436 @@ button { cursor: pointer; }
     if (m.file_path) { try { await sb.storage.from(SEAU).remove([m.file_path]); } catch (e) {} }
     etat.messages.delete(m.id);
     etat.reactions.delete(m.id);
+    medias.delete(m.id);
+    if (etat.edition && etat.edition.id === m.id) fermerBandeau();
     afficherMessages("auto");
   }
+
+  // ---------- Photos et vocaux : adresses signées, nœuds réutilisés ----------
+  // Les nœuds <img> et <audio> sont gardés d'un affichage à l'autre : une écoute en cours
+  // n'est pas coupée quand une réaction arrive, et les photos ne clignotent pas.
+  var medias = new Map();
+  var urls = { cache: new Map(), attente: new Map(), minuterie: null };
+  var DUREE_URL = 6 * 3600;
+
+  function demanderUrl(chemin, rappel) {
+    var c = urls.cache.get(chemin);
+    if (c && c.expire > Date.now() + 60000) { rappel(c.url); return; }
+    if (!urls.attente.has(chemin)) urls.attente.set(chemin, []);
+    urls.attente.get(chemin).push(rappel);
+    if (!urls.minuterie) urls.minuterie = setTimeout(signerEnAttente, 0);
+  }
+  async function signerEnAttente() {
+    urls.minuterie = null;
+    var attente = urls.attente;
+    urls.attente = new Map();
+    var chemins = Array.from(attente.keys());
+    for (var i = 0; i < chemins.length; i += 50) {
+      var lot = chemins.slice(i, i + 50);
+      var r;
+      try { r = await sb.storage.from(SEAU).createSignedUrls(lot, DUREE_URL); } catch (e) { continue; }
+      if (r.error || !r.data) continue;
+      r.data.forEach(function (x) {
+        var adresse = x.signedUrl || x.signedURL;
+        if (!adresse || x.error) return;
+        urls.cache.set(x.path, { url: adresse, expire: Date.now() + DUREE_URL * 1000 });
+        (attente.get(x.path) || []).forEach(function (f) { f(adresse); });
+      });
+    }
+  }
+  function rafraichirUrl(chemin, noeud) {
+    if (noeud.dataset.rafraichi) return;
+    noeud.dataset.rafraichi = "1";
+    urls.cache.delete(chemin);
+    demanderUrl(chemin, function (u) { noeud.src = u; });
+  }
+
+  function noeudMedia(m, genre) {
+    var deja = medias.get(m.id);
+    if (deja && deja.chemin === m.file_path) return deja.noeud;
+    var noeud;
+    if (genre === "photo") {
+      noeud = el("button", "photo-bouton");
+      noeud.type = "button";
+      noeud.setAttribute("aria-label", "Agrandir la photo " + (m.file_name || ""));
+      var img = el("img");
+      img.alt = m.file_name || "Photo";
+      img.decoding = "async";
+      img.addEventListener("error", function () { rafraichirUrl(m.file_path, img); });
+      img.addEventListener("load", function () {
+        // La photo arrive après l'affichage : on reste en bas si on y était
+        var flux = $("flux");
+        if (flux.scrollHeight - flux.scrollTop - flux.clientHeight < img.clientHeight + 120) flux.scrollTop = flux.scrollHeight;
+      }, { once: true });
+      noeud.appendChild(img);
+      noeud.addEventListener("click", function () { ouvrirVisionneuse(m); });
+      demanderUrl(m.file_path, function (u) { img.src = u; });
+    } else {
+      noeud = el("audio");
+      noeud.controls = true;
+      noeud.preload = "metadata";
+      noeud.setAttribute("aria-label", "Message vocal");
+      noeud.addEventListener("error", function () { rafraichirUrl(m.file_path, noeud); });
+      demanderUrl(m.file_path, function (u) { noeud.src = u; });
+    }
+    medias.set(m.id, { chemin: m.file_path, noeud: noeud });
+    return noeud;
+  }
+
+  // ---------- Visionneuse de photos ----------
+  var photoOuverte = null;
+  function ouvrirVisionneuse(m) {
+    photoOuverte = m;
+    var img = $("visionneuse-image");
+    img.removeAttribute("src");
+    img.alt = m.file_name || "Photo";
+    demanderUrl(m.file_path, function (u) { if (photoOuverte === m) img.src = u; });
+    $("visionneuse").hidden = false;
+    $("visionneuse-fermer").focus();
+  }
+  function fermerVisionneuse() {
+    if ($("visionneuse").hidden) return;
+    $("visionneuse").hidden = true;
+    photoOuverte = null;
+  }
+  $("visionneuse-fermer").addEventListener("click", fermerVisionneuse);
+  $("visionneuse-telecharger").addEventListener("click", function () { if (photoOuverte) ouvrirFichier(photoOuverte, true); });
+  $("visionneuse").addEventListener("click", function (ev) {
+    if (ev.target === $("visionneuse") || ev.target === $("visionneuse-image")) fermerVisionneuse();
+  });
+
+  // Réduit les photos lourdes avant l'envoi (2560 px maximum, JPEG)
+  function chargerImage(fichier) {
+    return new Promise(function (ok, ko) {
+      var adresse = URL.createObjectURL(fichier);
+      var img = new Image();
+      img.onload = function () { URL.revokeObjectURL(adresse); ok(img); };
+      img.onerror = function () { URL.revokeObjectURL(adresse); ko(new Error("image illisible")); };
+      img.src = adresse;
+    });
+  }
+  async function reduirePhoto(f) {
+    if (!/^image\/(jpeg|heic|heif|webp|png)$/.test(f.type || "")) return f;
+    if (f.size < 700 * 1024 || (f.type === "image/png" && f.size < 2 * 1024 * 1024)) return f;
+    try {
+      var img = await chargerImage(f);
+      var l = img.naturalWidth, h = img.naturalHeight;
+      if (!l || !h) return f;
+      var r = Math.min(1, 2560 / Math.max(l, h));
+      var c = document.createElement("canvas");
+      c.width = Math.round(l * r); c.height = Math.round(h * r);
+      var ctx = c.getContext("2d");
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(img, 0, 0, c.width, c.height);
+      var blob = await new Promise(function (ok) { c.toBlob(ok, "image/jpeg", 0.85); });
+      if (!blob || blob.size >= f.size) return f;
+      return new File([blob], (f.name || "photo").replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
+    } catch (e) {
+      return f;
+    }
+  }
+
+  // ---------- Répondre et modifier ----------
+  function nomDe(id) { return id === etat.moi ? "Toi" : (etat.membres.get(id) || "…"); }
+  function resume(m) {
+    if (m.file_path) {
+      if (/^audio\//.test(m.file_type || "")) return "🎤 Message vocal";
+      if (/^image\//.test(m.file_type || "")) return "📷 Photo" + (m.body ? " : " + m.body : "");
+      return "📎 " + (m.file_name || "Fichier");
+    }
+    var img = imageDuMessage(m.body);
+    if (img) return "Image : " + (NOMS_IMAGES[img] || "");
+    return (m.body || "").replace(/\s+/g, " ").slice(0, 200);
+  }
+  function construireCitation(id) {
+    var orig = etat.messages.get(id) || etat.citations.get(id);
+    var b = el("button", "citation");
+    b.type = "button";
+    b.appendChild(el("strong", null, orig ? nomDe(orig.sender) : "Message"));
+    b.appendChild(el("span", null, orig ? resume(orig) : "Message plus ancien"));
+    b.setAttribute("aria-label", "Voir le message cité");
+    b.addEventListener("click", function () { allerAuMessage(id); });
+    return b;
+  }
+  function montrerBandeau(titre, texte) {
+    var t = $("bandeau-texte");
+    t.replaceChildren(el("strong", null, titre), document.createTextNode(texte));
+    $("bandeau").hidden = false;
+  }
+  function fermerBandeau() {
+    var etaitEdition = !!etat.edition;
+    etat.reponse = null;
+    etat.edition = null;
+    $("bandeau").hidden = true;
+    if (etaitEdition) { $("texte").value = ""; ajusterHauteur(); }
+    $("envoyer-texte").textContent = "Envoyer";
+  }
+  function commencerReponse(m) {
+    if (etat.edition) fermerBandeau();
+    etat.reponse = m;
+    montrerBandeau("Réponse à " + (m.sender === etat.moi ? "toi-même" : nomDe(m.sender)), resume(m));
+    $("texte").focus();
+  }
+  function commencerEdition(m) {
+    etat.reponse = null;
+    etat.edition = m;
+    montrerBandeau("Modification", "Change le texte puis valide");
+    $("envoyer-texte").textContent = "Valider";
+    var c = $("texte");
+    c.value = m.body || "";
+    ajusterHauteur();
+    c.focus();
+    c.setSelectionRange(c.value.length, c.value.length);
+  }
+  async function enregistrerModification(texte) {
+    var m = etat.edition;
+    if (!texte) { avis("Le message ne peut pas être vide : pour l'effacer, utilise Supprimer."); return; }
+    if (texte === m.body) { fermerBandeau(); return; }
+    var r = await sb.from("messages").update({ body: texte }).eq("id", m.id).select().single();
+    if (r.error) { avis("La modification a échoué. Vérifie ta connexion et réessaie."); return; }
+    etat.messages.set(r.data.id, r.data);
+    fermerBandeau();
+    afficherMessages("auto");
+  }
+  $("bandeau-fermer").addEventListener("click", function () { fermerBandeau(); $("texte").focus(); });
+  $("texte").addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && !$("bandeau").hidden) { ev.stopPropagation(); fermerBandeau(); }
+  });
+
+  // Fait défiler jusqu'à un message (en chargeant les plus anciens si besoin)
+  async function allerAuMessage(id) {
+    var plusAncien = plusAncienId();
+    if (!etat.messages.has(id) && plusAncien != null && id < plusAncien) {
+      var r = await sb.from("messages").select("*").gte("id", id).lt("id", plusAncien).order("id", { ascending: false }).limit(3000);
+      if (r.error) { avis("Ce message n'a pas pu être chargé."); return; }
+      r.data.forEach(function (m) { etat.messages.set(m.id, m); });
+      await chargerAnnexes();
+      afficherMessages("garder");
+    }
+    var ligne = $("piste").querySelector('.ligne[data-id="' + id + '"]');
+    if (!ligne) { avis("Ce message a été supprimé."); return; }
+    var doux = window.matchMedia && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    ligne.scrollIntoView({ block: "center", behavior: doux ? "smooth" : "auto" });
+    ligne.classList.remove("surligne");
+    void ligne.offsetWidth;
+    ligne.classList.add("surligne");
+  }
+
+  // ---------- « Jules écrit… » ----------
+  var ecrit = { minuterie: null, dernierEnvoi: 0 };
+  function montrerEcrit(qui) {
+    $("ecrit").textContent = (etat.membres.get(qui) || "L'autre") + " écrit";
+    $("ecrit").hidden = false;
+    clearTimeout(ecrit.minuterie);
+    ecrit.minuterie = setTimeout(cacherEcrit, 4500);
+  }
+  function cacherEcrit() { clearTimeout(ecrit.minuterie); $("ecrit").hidden = true; }
+  $("texte").addEventListener("input", function () {
+    if (!etat.canal || !etat.enDirect || etat.edition || !$("texte").value.trim()) return;
+    var t = Date.now();
+    if (t - ecrit.dernierEnvoi < 2500) return;
+    ecrit.dernierEnvoi = t;
+    try {
+      var envoi = etat.canal.send({ type: "broadcast", event: "ecrit", payload: { qui: etat.moi } });
+      if (envoi && envoi.catch) envoi.catch(function () {});
+    } catch (e) {}
+  });
+
+  // ---------- Envoi différé (hors connexion) ----------
+  function estCoupure(e) {
+    if (!navigator.onLine) return true;
+    var texte = (e && (e.message || e.details || "")) + "";
+    return !!e && (e.name === "TypeError" || /fetch|network|réseau|load failed/i.test(texte));
+  }
+  function sauverFile() {
+    memoire.setItem(CLE_FILE, JSON.stringify(etat.fileAttente)).catch(function () {});
+  }
+  function mettreEnFile(ligne) {
+    etat.fileAttente.push({
+      client_id: ligne.client_id, body: ligne.body, reply_to: ligne.reply_to || null,
+      created_at: new Date().toISOString()
+    });
+    sauverFile();
+    afficherMessages("bas");
+    avis("Pas de connexion : le message partira tout seul dès qu'elle revient.");
+  }
+  var videEnCours = false;
+  async function viderFile() {
+    if (videEnCours || !etat.moi || !etat.fileAttente.length || !navigator.onLine) return;
+    videEnCours = true;
+    try {
+      while (etat.fileAttente.length) {
+        var x = etat.fileAttente[0];
+        var ligne = { body: x.body, client_id: x.client_id };
+        if (x.reply_to) ligne.reply_to = x.reply_to;
+        var r = await sb.from("messages").insert(ligne).select().single();
+        if (r.error) {
+          if (r.error.code === "23503") { x.reply_to = null; continue; }   // message cité supprimé entre-temps
+          if (r.error.code !== "23505") {                                  // 23505 : déjà arrivé
+            if (estCoupure(r.error)) break;
+            avis("Un message en attente n'a pas pu partir : « " + x.body.slice(0, 40) + " ».");
+          }
+        }
+        if (r.data) etat.messages.set(r.data.id, r.data);
+        etat.fileAttente.shift();
+        sauverFile();
+      }
+    } catch (e) {
+      /* on réessaiera au retour de la connexion */
+    } finally {
+      videEnCours = false;
+      afficherMessages("auto");
+      if (!etat.fileAttente.length) synchroniser().catch(function () {});
+    }
+  }
+  window.addEventListener("online", function () { viderFile(); });
+
+  // ---------- Recherche ----------
+  function plat(t) { return (t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
+  function ouvrirRecherche() {
+    fermerPanneau();
+    basculerMenuNotifs(false);
+    fermerReglages();
+    $("vue-recherche").hidden = false;
+    $("recherche-saisie").focus();
+    $("recherche-saisie").select();
+  }
+  function fermerRecherche() { $("vue-recherche").hidden = true; }
+  $("ouvrir-recherche").addEventListener("click", ouvrirRecherche);
+  $("recherche-retour").addEventListener("click", function () { fermerRecherche(); $("texte").focus(); });
+  $("recherche-form").addEventListener("submit", function (ev) { ev.preventDefault(); chercher(); });
+
+  function surligner(texte, terme) {
+    var frag = document.createDocumentFragment();
+    var i = plat(texte).indexOf(plat(terme));
+    if (i === -1 || plat(texte).length !== texte.length) { frag.appendChild(document.createTextNode(texte.slice(0, 220))); return frag; }
+    var debut = Math.max(0, i - 70);
+    var avant = (debut ? "…" : "") + texte.slice(debut, i);
+    frag.appendChild(document.createTextNode(avant));
+    frag.appendChild(el("mark", null, texte.slice(i, i + terme.length)));
+    frag.appendChild(document.createTextNode(texte.slice(i + terme.length, i + terme.length + 150)));
+    return frag;
+  }
+  var rechercheNo = 0;
+  async function chercher() {
+    var terme = $("recherche-saisie").value.replace(/["\\*%]/g, " ").replace(/\s+/g, " ").trim();
+    var etatR = $("recherche-etat"), liste = $("resultats");
+    if (terme.length < 2) { etatR.textContent = "Écris au moins deux lettres."; liste.replaceChildren(); return; }
+    var no = ++rechercheNo;
+    etatR.textContent = "Recherche…";
+    var motif = '"*' + terme + '*"';
+    var r = await sb.from("messages").select("id, sender, body, file_name, file_type, created_at")
+      .or("body.ilike." + motif + ",file_name.ilike." + motif)
+      .order("id", { ascending: false }).limit(80);
+    if (no !== rechercheNo) return;
+    if (r.error) { etatR.textContent = "La recherche a échoué. Vérifie ta connexion et réessaie."; return; }
+    var cle = plat(terme);
+    var trouves = r.data.filter(function (m) { return plat(m.body).indexOf(cle) !== -1 || plat(m.file_name).indexOf(cle) !== -1; });
+    liste.replaceChildren();
+    etatR.textContent = !trouves.length ? "Aucun message ne contient « " + terme + " »."
+      : trouves.length + (trouves.length > 1 ? " messages trouvés" : " message trouvé") + (r.data.length === 80 ? " (les plus récents)" : "") + ".";
+    trouves.forEach(function (m) {
+      var li = el("li");
+      var b = el("button");
+      b.type = "button";
+      var d = new Date(m.created_at);
+      b.appendChild(el("span", "resultat-meta", nomDe(m.sender) + " · " + fmtJourAn.format(d) + ", " + fmtHeure.format(d)));
+      var t = el("span", "resultat-texte");
+      if (m.body && plat(m.body).indexOf(cle) !== -1) t.appendChild(surligner(m.body, terme));
+      else { t.appendChild(document.createTextNode("📎 ")); t.appendChild(surligner(m.file_name || "", terme)); }
+      b.appendChild(t);
+      b.addEventListener("click", function () { fermerRecherche(); allerAuMessage(m.id); });
+      li.appendChild(b);
+      liste.appendChild(li);
+    });
+  }
+
+  // ---------- Messages vocaux ----------
+  var vocal = { rec: null, flux: null, morceaux: [], debut: 0, minuterie: null, annule: false };
+  function typeAudio() {
+    var types = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus"];
+    for (var i = 0; i < types.length; i++) {
+      try { if (MediaRecorder.isTypeSupported(types[i])) return types[i]; } catch (e) {}
+    }
+    return "";
+  }
+  async function commencerVocal() {
+    if (vocal.rec || etat.envoiEnCours) return;
+    if (!window.MediaRecorder || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      avis("Ce navigateur ne permet pas d'enregistrer un message vocal."); return;
+    }
+    if (etat.edition) fermerBandeau();
+    try {
+      vocal.flux = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      avis("Le micro n'est pas autorisé : active-le pour Le fil dans les réglages du navigateur."); return;
+    }
+    var type = typeAudio();
+    try {
+      vocal.rec = new MediaRecorder(vocal.flux, type ? { mimeType: type } : undefined);
+    } catch (e) {
+      vocal.flux.getTracks().forEach(function (t) { t.stop(); }); vocal.flux = null;
+      avis("L'enregistrement n'a pas pu démarrer."); return;
+    }
+    vocal.morceaux = [];
+    vocal.annule = false;
+    vocal.rec.ondataavailable = function (e) { if (e.data && e.data.size) vocal.morceaux.push(e.data); };
+    vocal.rec.onstop = finirVocal;
+    vocal.rec.start(1000);
+    vocal.debut = Date.now();
+    $("saisie").hidden = true;
+    $("enregistrement").hidden = false;
+    majDuree();
+    vocal.minuterie = setInterval(majDuree, 250);
+    $("vocal-envoyer").focus();
+  }
+  function majDuree() {
+    var s = Math.floor((Date.now() - vocal.debut) / 1000);
+    $("enregistrement-duree").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    if (s >= 600) arreterVocal(false);   // 10 minutes au plus
+  }
+  function arreterVocal(annuler) {
+    if (!vocal.rec) return;
+    vocal.annule = annuler;
+    try { vocal.rec.stop(); } catch (e) { finirVocal(); }
+  }
+  async function finirVocal() {
+    clearInterval(vocal.minuterie);
+    var rec = vocal.rec;
+    vocal.rec = null;
+    if (vocal.flux) { vocal.flux.getTracks().forEach(function (t) { t.stop(); }); vocal.flux = null; }
+    $("enregistrement").hidden = true;
+    $("saisie").hidden = false;
+    if (vocal.annule || !vocal.morceaux.length) return;
+    if (Date.now() - vocal.debut < 800) { avis("Message vocal trop court."); return; }
+    var type = ((rec && rec.mimeType) || vocal.morceaux[0].type || "audio/webm").split(";")[0];
+    var ext = type === "audio/mp4" ? "m4a" : type === "audio/ogg" ? "ogg" : "webm";
+    var fichier = new File(vocal.morceaux, "Message vocal." + ext, { type: type });
+    vocal.morceaux = [];
+    etat.envoiEnCours = true;
+    $("envoyer").disabled = true;
+    try {
+      await envoyerFichier(fichier, etat.reponse ? { reply_to: etat.reponse.id } : null);
+      fermerBandeau();
+    } catch (e) {
+      avis(e && e.message === "trop gros" ? "Ce message vocal est trop long." : "Le message vocal n'est pas parti. Vérifie ta connexion et réessaie.");
+    } finally {
+      etat.envoiEnCours = false;
+      $("envoyer").disabled = false;
+      $("texte").focus();
+    }
+  }
+  $("micro").addEventListener("click", commencerVocal);
+  $("vocal-annuler").addEventListener("click", function () { arreterVocal(true); });
+  $("vocal-envoyer").addEventListener("click", function () { arreterVocal(false); });
+
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key !== "Escape") return;
+    if (!$("visionneuse").hidden) { fermerVisionneuse(); return; }
+    if (vocal.rec) { arreterVocal(true); return; }
+    if (!$("vue-recherche").hidden) fermerRecherche();
+  });
+
 
   // ---------- Barre d'outils (en haut) ----------
   var VOLETS = { calc: "Calculatrice", tva: "Prix et marges", conv: "Convertisseur", liste: "Liste à deux" };

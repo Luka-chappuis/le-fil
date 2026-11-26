@@ -1,5 +1,5 @@
 // Le fil : service worker (notifications appli fermée, ouverture hors ligne de la page)
-const CACHE = "le-fil-v7";
+const CACHE = "le-fil-v8";
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./", "./index.html", "./manifest.webmanifest"])).catch(() => {}));
@@ -36,6 +36,8 @@ self.addEventListener("push", (e) => {
     const fenetres = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
     // Pas de notification si Le fil est déjà ouvert et au premier plan
     if (fenetres.some((f) => f.visibilityState === "visible" && f.focused)) return;
+    // Pastille sur l'icône de l'appli installée (effacée à l'ouverture)
+    try { if (self.navigator.setAppBadge) await self.navigator.setAppBadge(); } catch (_) {}
     await self.registration.showNotification(d.titre || "Le fil", {
       body: d.corps || "Nouveau message",
       tag: "le-fil",
