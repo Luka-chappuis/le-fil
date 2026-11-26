@@ -158,6 +158,12 @@ class Serveur:
                 m = {"id": len(self.mots) + 100, "mot": d["mot"], "image_path": d["image_path"], "created_by": LUKA, "created_at": "2026-11-26T15:00:%02dZ" % len(self.mots)}
                 self.mots.append(m)
                 return js(m, 201)
+            if methode == "PATCH":
+                d = json.loads(req.post_data)
+                for m in self.mots:
+                    if "id=eq.%d" % m["id"] in url:
+                        m.update(d); return js(m)
+                return js({"message": "introuvable"}, 404)
             if methode == "DELETE":
                 self.mots[:] = [m for m in self.mots if "id=eq.%d" % m["id"] not in url]
                 return route.fulfill(status=204, headers=entetes)
@@ -386,6 +392,31 @@ with sync_playwright() as p:
     envoyes = [m for m in s.messages if m.get("body") == "Envoyé dans le tunnel"]
     verifier("hors ligne : parti au retour de la connexion, une seule fois", len(envoyes) == 1, len(envoyes))
     verifier("hors ligne : plus marqué en attente", page.locator(".ligne.pas-envoye").count() == 0)
+
+    # Mots magiques : modifier le mot ou l'image
+    s.mots.append({"id": 500, "mot": "lydie", "image_path": JULES + "/magie/a.webp", "created_by": JULES, "created_at": "2026-11-26T15:00:00Z"})
+    s.mots.append({"id": 501, "mot": "apéro", "image_path": LUKA + "/magie/b.webp", "created_by": LUKA, "created_at": "2026-11-26T15:01:00Z"})
+    page.click("#ouvrir-reglages"); page.wait_for_timeout(600)
+    ligne = page.locator(".mot-ligne", has_text="lydie")
+    ligne.locator("text=Modifier").click()
+    verifier("mot magique : choix entre le mot et l'image", ligne.locator(".choix-modif button").count() == 2)
+    page.screenshot(path=str(SORTIE / "v8-10-mot-choix.png"))
+    ligne.locator("text=Le mot").click()
+    champ = page.locator(".mot-edition input")
+    champ.fill("Apero"); page.locator(".mot-edition button[type=submit]").click(); page.wait_for_timeout(200)
+    verifier("mot magique : doublon refusé", "existe déjà" in page.inner_text(".mot-edition"))
+    champ.fill("Lydie la reine"); page.locator(".mot-edition button[type=submit]").click(); page.wait_for_timeout(500)
+    verifier("mot magique : mot modifié", any(m["mot"] == "Lydie la reine" for m in s.mots) and page.locator(".mot-nom", has_text="Lydie la reine").count() == 1)
+    ligne = page.locator(".mot-ligne", has_text="Lydie la reine")
+    ligne.locator("text=Modifier").click()
+    with page.expect_file_chooser() as fc:
+        ligne.locator("text=L'image").click()
+    fc.value.set_files(files=[{"name": "neuve.png", "mimeType": "image/png", "buffer": PNG_ESSAI}])
+    page.wait_for_timeout(1000)
+    m500 = [m for m in s.mots if m["id"] == 500][0]
+    verifier("mot magique : nouvelle image dans mon dossier", m500["image_path"].startswith(LUKA + "/magie/") and m500["image_path"] != JULES + "/magie/a.webp", m500)
+    verifier("mot magique : ancienne image supprimée", JULES + "/magie/a.webp" in s.fichiers_retires, s.fichiers_retires)
+    page.click("#reglages-retour")
 
     verifier("aucune erreur de script", not [e for e in s.erreurs if "pageerror" in e], s.erreurs)
 

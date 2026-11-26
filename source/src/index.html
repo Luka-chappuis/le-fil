@@ -470,6 +470,9 @@ button { cursor: pointer; }
 .mot-auteur { font-size: 13.5px; color: var(--doux); }
 .mot-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .mot-actions .confirmer { color: var(--alerte); font-weight: 600; }
+.mot-actions .choix-modif .bouton-discret { font-weight: 600; color: var(--lac); }
+.mot-edition { display: grid; gap: 6px; }
+.mot-edition input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--lac); background: var(--papier); font-size: 17px; }
 #mot-erreur { margin: 6px 0 0; }
 
 /* ---------- Mots magiques : une image géante passe devant le fil, sans bloquer les clics ---------- */
@@ -2185,7 +2188,22 @@ button { cursor: pointer; }
         suppr.classList.add("confirmer");
         arme = setTimeout(function () { arme = null; suppr.textContent = "Supprimer"; suppr.classList.remove("confirmer"); }, 4000);
       });
-      actions.appendChild(essayer); actions.appendChild(suppr);
+      var modif = el("button", "bouton-discret", "Modifier");
+      modif.type = "button";
+      modif.setAttribute("aria-label", "Modifier le mot « " + m.mot + " »");
+      modif.addEventListener("click", function () {
+        var choix = el("span", "choix-modif");
+        var bMot = el("button", "bouton-discret", "Le mot");
+        bMot.type = "button";
+        bMot.addEventListener("click", function () { editerMotMagique(m, li); });
+        var bImage = el("button", "bouton-discret", "L'image");
+        bImage.type = "button";
+        bImage.addEventListener("click", function () { changerImageMot(m); });
+        choix.appendChild(bMot); choix.appendChild(bImage);
+        modif.replaceWith(choix);
+        bMot.focus();
+      });
+      actions.appendChild(essayer); actions.appendChild(modif); actions.appendChild(suppr);
       gauche.appendChild(actions);
       var droite = el("div", "mot-image");
       var img = el("img"); img.alt = "Image du mot « " + m.mot + " »";
@@ -2195,6 +2213,75 @@ button { cursor: pointer; }
       ul.appendChild(li);
     });
     $("mots-vide").hidden = magie.liste.length > 0;
+  }
+
+  // Modifier le mot : champ à la place du nom
+  function editerMotMagique(m, li) {
+    var gauche = li.querySelector(".mot-texte");
+    var form = el("form", "mot-edition");
+    form.noValidate = true;
+    var champ = el("input");
+    champ.type = "text"; champ.maxLength = 40; champ.value = m.mot; champ.autocomplete = "off";
+    champ.setAttribute("aria-label", "Nouveau mot");
+    var rangee = el("div", "mot-actions");
+    var ok = el("button", "bouton", "Enregistrer"); ok.type = "submit";
+    var annuler = el("button", "bouton-discret", "Annuler"); annuler.type = "button";
+    var erreur = el("p", "erreur"); erreur.hidden = true;
+    rangee.appendChild(ok); rangee.appendChild(annuler);
+    form.appendChild(champ); form.appendChild(rangee); form.appendChild(erreur);
+    gauche.replaceChildren(form);
+    champ.focus(); champ.select();
+    annuler.addEventListener("click", afficherMotsMagiques);
+    champ.addEventListener("keydown", function (ev) { if (ev.key === "Escape") { ev.stopPropagation(); afficherMotsMagiques(); } });
+    form.addEventListener("submit", async function (ev) {
+      ev.preventDefault();
+      var mot = champ.value.trim().replace(/\s+/g, " ");
+      var n = normaliser(mot).trim();
+      function dire(t) { erreur.textContent = t; erreur.hidden = false; }
+      if (!n) return dire("Écris le mot qui fera apparaître l'image.");
+      if (mot === m.mot) return afficherMotsMagiques();
+      if (magie.liste.some(function (x) { return x.id !== m.id && normaliser(x.mot).trim() === n; })) return dire("« " + mot + " » existe déjà dans la liste.");
+      ok.disabled = true;
+      var r = await sb.from("mots_magiques").update({ mot: mot }).eq("id", m.id).select().single();
+      if (r.error) { ok.disabled = false; return dire(r.error.code === "23505" ? "« " + mot + " » existe déjà dans la liste." : "La modification a échoué. Réessaie dans un instant."); }
+      await chargerMotsMagiques();
+      avis("Mot modifié : « " + mot + " ».");
+    });
+  }
+
+  // Changer l'image d'un mot magique
+  function changerImageMot(m) {
+    var entree = document.createElement("input");
+    entree.type = "file";
+    entree.accept = "image/png,image/jpeg,image/gif,image/webp,image/heic,image/heif";
+    entree.hidden = true;
+    entree.addEventListener("change", async function () {
+      var f = entree.files && entree.files[0];
+      entree.remove();
+      if (!f) return;
+      if (!/^image\//.test(f.type) && !/\.(heic|heif)$/i.test(f.name)) { avis("Choisis une image (photo, PNG, JPEG, GIF ou WebP)."); return; }
+      if (f.size > 20 * 1024 * 1024) { avis("Cette image dépasse 20 Mo."); return; }
+      var image;
+      try { image = await preparerImage(f); }
+      catch (e) { avis(e.message === "trop_lourd" ? "Ce GIF dépasse 6 Mo." : "Cette image n'a pas pu être lue. Essaie une photo au format JPEG ou PNG."); return; }
+      avis("Envoi de la nouvelle image…");
+      var ext = image.type === "image/gif" ? "gif" : image.type === "image/png" ? "png" : "webp";
+      var chemin = etat.moi + "/magie/" + identifiantUnique() + "." + ext;
+      var envoi = await sb.storage.from(SEAU).upload(chemin, image, { contentType: image.type || "image/webp", upsert: false });
+      if (envoi.error) { avis("L'envoi de l'image a échoué. Vérifie ta connexion et réessaie."); return; }
+      var r = await sb.from("mots_magiques").update({ image_path: chemin }).eq("id", m.id).select().single();
+      if (r.error) {
+        try { await sb.storage.from(SEAU).remove([chemin]); } catch (e) {}
+        avis("Le changement d'image a échoué. Réessaie dans un instant.");
+        return;
+      }
+      try { await sb.storage.from(SEAU).remove([m.image_path]); } catch (e) {}
+      delete magie.urls[m.image_path];
+      await chargerMotsMagiques();
+      avis("Nouvelle image pour « " + m.mot + " ».");
+    });
+    document.body.appendChild(entree);
+    entree.click();
   }
 
   async function supprimerMotMagique(m, bouton) {

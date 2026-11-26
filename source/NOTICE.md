@@ -26,6 +26,7 @@ Tables (toutes protégées par des règles d'accès : seuls les deux membres y a
 `mots_magiques` (mot et chemin de l'image), `reglages`, `decor_cle`.
 Colonnes ajoutées en v8 sur `messages` : `reply_to` (message cité), `edited_at` (rempli par la base à chaque modification), `client_id` (identifiant unique choisi par l'appareil, évite les doublons quand un message en attente repart).
 Modification : sur ses propres messages, seuls le texte (`body`) et le fichier (`file_path`, `file_name`, `file_size`, `file_type`) peuvent changer. Le déclencheur `messages_limiter_modification` n'accepte un nouveau fichier que pour un message qui en avait déjà un, déposé dans son propre dossier ; l'appli supprime ensuite l'ancien fichier du stockage.
+Mots magiques : les deux membres peuvent modifier le mot ou l'image de n'importe quel mot (règle « membres modifient les mots magiques » + déclencheur `mots_magiques_limiter` : une nouvelle image doit être dans le dossier `magie` de celui qui modifie).
 Stockage : compartiment privé `fichiers` (fichiers envoyés dans `<id membre>/…`, images des mots magiques dans `<id membre>/magie/…`).
 
 Fonctions :
@@ -37,7 +38,7 @@ Fonctions :
 
 Messages en temps réel, fichiers jusqu'à 20 Mo, réactions, « Vu », émojis et images-émojis, notifications (son au choix),
 outils en haut (calculatrice, prix et marges avec commission, convertisseur avec monnaies BCE, liste à deux, rédaction),
-mots magiques gérés dans Réglages (roue dentée) : la photo passe au premier plan quelques secondes.
+mots magiques gérés dans Réglages (roue dentée), avec « Modifier » pour changer le mot ou l'image : la photo passe au premier plan quelques secondes.
 
 Ajouts v8 : photos affichées dans le fil (agrandies au clic, réduites à 2560 px avant l'envoi), réponse à un message précis,
 modification de ses messages, et sur une photo ou un fichier : « Modifier » propose le texte ou l'image / le fichier (remplacement) (un texte envoyé avec un seul fichier devient sa légende), « Jules écrit… » (diffusion temps réel, rien n'est enregistré), recherche (loupe),
