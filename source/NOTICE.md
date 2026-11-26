@@ -25,7 +25,7 @@ Tables (toutes protégées par des règles d'accès : seuls les deux membres y a
 `members`, `messages`, `reactions`, `reads` (« Vu »), `tasks` (liste à deux), `push_subscriptions` (appareils abonnés aux notifications),
 `mots_magiques` (mot et chemin de l'image), `reglages`, `decor_cle`.
 Colonnes ajoutées en v8 sur `messages` : `reply_to` (message cité), `edited_at` (rempli par la base à chaque modification), `client_id` (identifiant unique choisi par l'appareil, évite les doublons quand un message en attente repart).
-Modification : seul le texte (`body`) de ses propres messages peut changer (droit limité à cette colonne + déclencheur `messages_limiter_modification`).
+Modification : sur ses propres messages, seuls le texte (`body`) et le fichier (`file_path`, `file_name`, `file_size`, `file_type`) peuvent changer. Le déclencheur `messages_limiter_modification` n'accepte un nouveau fichier que pour un message qui en avait déjà un, déposé dans son propre dossier ; l'appli supprime ensuite l'ancien fichier du stockage.
 Stockage : compartiment privé `fichiers` (fichiers envoyés dans `<id membre>/…`, images des mots magiques dans `<id membre>/magie/…`).
 
 Fonctions :
@@ -40,6 +40,6 @@ outils en haut (calculatrice, prix et marges avec commission, convertisseur avec
 mots magiques gérés dans Réglages (roue dentée) : la photo passe au premier plan quelques secondes.
 
 Ajouts v8 : photos affichées dans le fil (agrandies au clic, réduites à 2560 px avant l'envoi), réponse à un message précis,
-modification de ses messages et des légendes de photos/fichiers (un texte envoyé avec un seul fichier devient sa légende), « Jules écrit… » (diffusion temps réel, rien n'est enregistré), recherche (loupe),
+modification de ses messages, et sur une photo ou un fichier : « Modifier » propose le texte ou l'image / le fichier (remplacement) (un texte envoyé avec un seul fichier devient sa légende), « Jules écrit… » (diffusion temps réel, rien n'est enregistré), recherche (loupe),
 messages vocaux (micro), mode sombre en option (Réglages, clair par défaut, choix gardé par appareil), pastille de non-lus sur l'icône, messages écrits hors connexion
 gardés sur l'appareil et envoyés au retour du réseau.

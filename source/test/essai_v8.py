@@ -331,11 +331,24 @@ with sync_playwright() as p:
 
     # Légende d'une photo
     page.click(".ligne[data-id='2'] >> text=Modifier")
+    verifier("modifier photo : choix entre le texte et l'image", page.locator(".ligne[data-id='2'] .choix-modif button").count() == 2)
+    page.screenshot(path=str(SORTIE / "v8-3b-choix.png"))
+    page.click(".ligne[data-id='2'] >> text=Le texte")
     verifier("légende : texte de la photo repris", page.input_value("#texte") == "Le stand hier" and "Légende" in page.inner_text("#bandeau"))
     page.fill("#texte", "Le stand avant l'ouverture"); page.keyboard.press("Enter"); page.wait_for_timeout(500)
     verifier("légende : modifiée sous la photo", "avant l'ouverture" in page.inner_text(".ligne[data-id='2'] .bulle.photo") and page.locator(".ligne[data-id='2'] .photo-bouton img").count() == 1)
-    page.click(".ligne[data-id='2'] >> text=Modifier"); page.fill("#texte", ""); page.keyboard.press("Enter"); page.wait_for_timeout(500)
+    page.click(".ligne[data-id='2'] >> text=Modifier"); page.click(".ligne[data-id='2'] >> text=Le texte"); page.fill("#texte", ""); page.keyboard.press("Enter"); page.wait_for_timeout(500)
     verifier("légende : peut être retirée", s.modifs[-1].get("body") is None and page.locator(".ligne[data-id='2'] .legende").count() == 0, s.modifs[-1])
+    ancien = page.get_attribute(".ligne[data-id='2'] .photo-bouton img", "src")
+    page.click(".ligne[data-id='2'] >> text=Modifier")
+    with page.expect_file_chooser() as fc:
+        page.click(".ligne[data-id='2'] >> text=L'image")
+    fc.value.set_files(files=[{"name": "nouvelle.png", "mimeType": "image/png", "buffer": PNG_ESSAI}])
+    page.wait_for_timeout(800)
+    m2 = [m for m in s.messages if m["id"] == 2][0]
+    verifier("remplacer l'image : message mis à jour", m2["file_name"] == "nouvelle.png" and m2["file_path"] != LUKA + "/p.png" and m2["file_path"].startswith(LUKA + "/"), m2)
+    verifier("remplacer l'image : ancienne image supprimée du stockage", LUKA + "/p.png" in s.fichiers_retires, s.fichiers_retires)
+    verifier("remplacer l'image : nouvelle vignette affichée", page.locator(".ligne[data-id='2'] .photo-bouton img[src]").count() == 1 and page.locator(".ligne[data-id='2'] .modifie").count() == 1)
     page.set_input_files("#selecteur", files=[{"name": "plan.png", "mimeType": "image/png", "buffer": PNG_ESSAI}])
     page.fill("#texte", "Le plan final"); page.keyboard.press("Enter"); page.wait_for_timeout(800)
     dernier = s.messages[-1]

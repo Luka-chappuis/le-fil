@@ -187,6 +187,8 @@ button { cursor: pointer; }
 .meta .bouton-discret.confirmer { color: var(--alerte); font-weight: 600; }
 .meta .vu { color: var(--lac); font-weight: 600; margin-left: 4px; }
 .choix-reaction { display: inline-flex; gap: 1px; }
+.choix-modif { display: inline-flex; gap: 2px; padding: 1px 2px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--trait); }
+.meta .choix-modif .bouton-discret { font-weight: 600; color: var(--lac); }
 .choix-reaction button { border: 0; background: none; border-radius: 7px; padding: 1px 4px; font-size: 18px; line-height: 1.2; }
 .choix-reaction button:hover { background: rgba(18, 38, 43, .08); }
 
@@ -1629,7 +1631,9 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     if (aMoi && ((m.file_path && !estVocal) || (!m.file_path && m.body && !imageDuMessage(m.body)))) {
       var bModif = el("button", "bouton-discret", "Modifier");
       bModif.type = "button";
-      bModif.addEventListener("click", function () { commencerEdition(m); });
+      bModif.addEventListener("click", function () {
+        if (m.file_path) choisirModification(m, bModif); else commencerEdition(m);
+      });
       meta.appendChild(bModif);
     }
     if (aMoi) {
@@ -2791,6 +2795,62 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     c.focus();
     c.setSelectionRange(c.value.length, c.value.length);
   }
+  // Sur une photo ou un fichier : modifier le texte, ou remplacer l'image / le fichier
+  function choisirModification(m, bouton) {
+    var photo = /^image\//.test(m.file_type || "");
+    var choix = el("span", "choix-modif");
+    var bTexte = el("button", "bouton-discret", "Le texte");
+    bTexte.type = "button";
+    bTexte.addEventListener("click", function () { commencerEdition(m); afficherMessages("garder"); });
+    var bFichier = el("button", "bouton-discret", photo ? "L'image" : "Le fichier");
+    bFichier.type = "button";
+    bFichier.addEventListener("click", function () { choisirRemplacement(m, photo); });
+    choix.appendChild(bTexte);
+    choix.appendChild(bFichier);
+    bouton.replaceWith(choix);
+    bTexte.focus();
+  }
+  function choisirRemplacement(m, photo) {
+    var entree = document.createElement("input");
+    entree.type = "file";
+    if (photo) entree.accept = "image/png,image/jpeg,image/gif,image/webp,image/heic,image/heif";
+    entree.hidden = true;
+    entree.addEventListener("change", function () {
+      var f = entree.files && entree.files[0];
+      entree.remove();
+      if (f) remplacerFichier(m, f, photo);
+    });
+    document.body.appendChild(entree);
+    entree.click();
+  }
+  async function remplacerFichier(m, f, photo) {
+    if (photo && !/^image\//.test(f.type || "")) { avis("Choisis une image pour remplacer la photo."); return; }
+    if (!f.size) { avis("Ce fichier est vide."); return; }
+    avis(photo ? "Envoi de la nouvelle image…" : "Envoi du nouveau fichier…");
+    f = await reduirePhoto(f);
+    if (f.size > TAILLE_MAX) { avis("Ce fichier dépasse la limite de 20 Mo."); return; }
+    var ext = extension(f.name);
+    var chemin = etat.moi + "/" + identifiantUnique() + (ext ? "." + ext : "");
+    var depot = await sb.storage.from(SEAU).upload(chemin, f, { contentType: f.type || "application/octet-stream", upsert: false });
+    if (depot.error) { avis("Le remplacement a échoué. Vérifie ta connexion et réessaie."); return; }
+    var r = await sb.from("messages").update({
+      file_path: chemin,
+      file_name: (f.name || "Fichier").slice(0, 255),
+      file_size: f.size,
+      file_type: f.type || "application/octet-stream"
+    }).eq("id", m.id).select().single();
+    if (r.error) {
+      try { await sb.storage.from(SEAU).remove([chemin]); } catch (e) {}
+      avis("Le remplacement a échoué. Réessaie dans un instant.");
+      return;
+    }
+    try { await sb.storage.from(SEAU).remove([m.file_path]); } catch (e) {}
+    medias.delete(m.id);
+    etat.messages.set(r.data.id, r.data);
+    afficherMessages("auto");
+    avis(photo ? "Image remplacée." : "Fichier remplacé.");
+  }
+
   async function enregistrerModification(texte) {
     var m = etat.edition;
     if (!texte && !m.file_path) { avis("Le message ne peut pas être vide : pour l'effacer, utilise Supprimer."); return; }
