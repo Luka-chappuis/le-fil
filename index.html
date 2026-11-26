@@ -3,9 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#EDF2F1" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0F1B1E" media="(prefers-color-scheme: dark)">
-<meta name="color-scheme" content="light dark">
+<meta name="theme-color" id="couleur-theme" content="#EDF2F1">
+<script>
+  // Thème choisi dans les Réglages (clair par défaut), appliqué avant l'affichage
+  try {
+    if (localStorage.getItem("le-fil-theme") === "sombre") {
+      document.documentElement.dataset.theme = "sombre";
+      document.getElementById("couleur-theme").content = "#0F1B1E";
+    }
+  } catch (e) {}
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Le fil">
@@ -555,39 +562,40 @@ button { cursor: pointer; }
 .resultat-texte { overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .resultat-texte mark { background: #FFE8A3; color: inherit; border-radius: 3px; }
 .recherche-etat { color: var(--doux); margin: 8px 2px; }
+.theme-choix { margin-bottom: 30px; }
+.theme-choix button { padding: 7px 18px; font-size: 15px; }
 
-/* ---------- Mode sombre (suit le réglage de l'appareil) ---------- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --brume: #0F1B1E;
-    --papier: #182A2E;
-    --encre: #E3ECEA;
-    --lac: #2F8A9C;
-    --lac-fonce: #3A9DB0;
-    --fil: #E5485A;
-    --doux: #9AAEB2;
-    --trait: #2A3F44;
-    --alerte: #FF7A86;
-  }
-  .ligne.moi .bulle { background: #1F6575; }
-  .bouton-second:hover, .fichier-actions button:hover, .calc-touches button:hover, .image-tuile:hover { background: #22383D; }
-  .bouton-discret:hover, .bouton-icone:hover, .choix-reaction button:hover { background: rgba(255, 255, 255, .07); }
-  .onglets { background: rgba(255, 255, 255, .06); }
-  .ligne.autre .bulle a, .resultats .resultat-texte a { color: #7CC8D6; }
-  .citation { background: rgba(255, 255, 255, .06); }
-  .redac-sortie del { background: #4A1F26; }
-  .redac-sortie ins, .redac-fautes .avant-apres ins { color: #7DDCAE; background: #173B2C; }
-  .redac-fautes .avant-apres ins { background: none; }
-  .resultat-texte mark { background: #6B5414; }
-  .avis { background: #E3ECEA; color: #0F1B1E; }
-  @keyframes voile {
-    0%   { background: rgba(15, 27, 30, 0); }
-    12%  { background: rgba(15, 27, 30, .88); }
-    72%  { background: rgba(15, 27, 30, .88); }
-    100% { background: rgba(15, 27, 30, 0); }
-  }
+/* ---------- Mode sombre (option dans les Réglages) ---------- */
+:root[data-theme="sombre"] {
+  color-scheme: dark;
+  --brume: #0F1B1E;
+  --papier: #182A2E;
+  --encre: #E3ECEA;
+  --lac: #2F8A9C;
+  --lac-fonce: #3A9DB0;
+  --fil: #E5485A;
+  --doux: #9AAEB2;
+  --trait: #2A3F44;
+  --alerte: #FF7A86;
 }
+:root[data-theme="sombre"] .ligne.moi .bulle:not(.photo) { background: #1F6575; }
+:root[data-theme="sombre"] .bouton-second:hover, :root[data-theme="sombre"] .fichier-actions button:hover, :root[data-theme="sombre"] .calc-touches button:hover, :root[data-theme="sombre"] .image-tuile:hover { background: #22383D; }
+:root[data-theme="sombre"] .bouton-discret:hover, :root[data-theme="sombre"] .bouton-icone:hover, :root[data-theme="sombre"] .choix-reaction button:hover { background: rgba(255, 255, 255, .07); }
+:root[data-theme="sombre"] .onglets { background: rgba(255, 255, 255, .06); }
+:root[data-theme="sombre"] .ligne.autre .bulle a, :root[data-theme="sombre"] .resultats .resultat-texte a { color: #7CC8D6; }
+:root[data-theme="sombre"] .citation { background: rgba(255, 255, 255, .06); }
+:root[data-theme="sombre"] .redac-sortie del { background: #4A1F26; }
+:root[data-theme="sombre"] .redac-sortie ins, :root[data-theme="sombre"] .redac-fautes .avant-apres ins { color: #7DDCAE; background: #173B2C; }
+:root[data-theme="sombre"] .redac-fautes .avant-apres ins { background: none; }
+:root[data-theme="sombre"] .resultat-texte mark { background: #6B5414; }
+:root[data-theme="sombre"] .avis { background: #E3ECEA; color: #0F1B1E; }
+@keyframes voile-sombre {
+  0%   { background: rgba(15, 27, 30, 0); }
+  12%  { background: rgba(15, 27, 30, .88); }
+  72%  { background: rgba(15, 27, 30, .88); }
+  100% { background: rgba(15, 27, 30, 0); }
+}
+:root[data-theme="sombre"] .magie.joue { animation-name: voile-sombre; }
 
 /* ---------- Écrans étroits : le fil passe à gauche ---------- */
 @media (max-width: 700px) {
@@ -865,6 +873,13 @@ button { cursor: pointer; }
       <span></span>
     </div>
     <div class="reglages-corps">
+      <h3 class="reglages-titre">Apparence</h3>
+      <p class="reglages-intro">Ce choix vaut pour cet appareil.</p>
+      <div class="bascule theme-choix" role="group" aria-label="Apparence">
+        <button type="button" data-theme-choix="clair" aria-pressed="true">Clair</button>
+        <button type="button" data-theme-choix="sombre" aria-pressed="false">Sombre</button>
+      </div>
+
       <h3 class="reglages-titre">Mots magiques</h3>
       <p class="reglages-intro">Quand un message contient l'un de ces mots, son image passe en grand derrière le fil pendant quelques secondes. Les majuscules, les accents et le pluriel ne comptent pas.</p>
       <form class="mot-ligne mot-ajout" id="mot-ajout" novalidate>
@@ -1611,7 +1626,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     });
     meta.appendChild(bReagir);
 
-    if (aMoi && !m.file_path && m.body && !imageDuMessage(m.body)) {
+    if (aMoi && ((m.file_path && !estVocal) || (!m.file_path && m.body && !imageDuMessage(m.body)))) {
       var bModif = el("button", "bouton-discret", "Modifier");
       bModif.type = "button";
       bModif.addEventListener("click", function () { commencerEdition(m); });
@@ -2420,7 +2435,7 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     if (etat.envoiEnCours) return;
     var champ = $("texte");
     var texte = champ.value.trim();
-    if (!texte && !etat.enAttente.length) return;
+    if (!texte && !etat.enAttente.length && !etat.edition) return;
     etat.envoiEnCours = true;
     var bouton = $("envoyer");
     bouton.disabled = true;
@@ -2431,7 +2446,9 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
         return;
       }
       var reponse = etat.reponse ? etat.reponse.id : null;
-      if (texte) {
+      // Un texte envoyé avec un seul fichier devient sa légende
+      var legende = texte && etat.enAttente.length === 1 ? texte : null;
+      if (texte && !legende) {
         var ligne = { body: texte, client_id: identifiantUnique() };
         if (reponse) ligne.reply_to = reponse;
         try {
@@ -2445,14 +2462,18 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
         jouerMagie(texte);
       }
       while (etat.enAttente.length) {
-        await envoyerFichier(etat.enAttente[0], !texte && reponse ? { reply_to: reponse } : null);
+        var extra = {};
+        if (legende) extra.body = legende;
+        if (reponse && (!texte || legende)) extra.reply_to = reponse;
+        await envoyerFichier(etat.enAttente[0], extra);
         reponse = null;
         etat.enAttente.shift();
         afficherEnAttente();
       }
+      if (legende) { champ.value = ""; ajusterHauteur(); jouerMagie(legende); }
       fermerBandeau();
     } catch (e) {
-      if (texte && !champ.value) fermerBandeau();
+      if (texte && !legende && !champ.value) fermerBandeau();
       avis(e && e.message === "trop gros" ? "Ce fichier dépasse la limite de 20 Mo."
         : etat.enAttente.length ? "Les fichiers ne sont pas partis : ils restent prêts, réessaie quand la connexion revient."
         : "L'envoi a échoué. Vérifie ta connexion internet et réessaie.");
@@ -2701,6 +2722,22 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
     }
   }
 
+  // ---------- Apparence (clair / sombre) ----------
+  function appliquerTheme(theme) {
+    var sombre = theme === "sombre";
+    if (sombre) document.documentElement.dataset.theme = "sombre";
+    else delete document.documentElement.dataset.theme;
+    $("couleur-theme").content = sombre ? "#0F1B1E" : "#EDF2F1";
+    document.querySelectorAll("[data-theme-choix]").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.themeChoix === (sombre ? "sombre" : "clair")));
+    });
+    try { localStorage.setItem("le-fil-theme", sombre ? "sombre" : "clair"); } catch (e) {}
+  }
+  document.querySelectorAll("[data-theme-choix]").forEach(function (b) {
+    b.addEventListener("click", function () { appliquerTheme(b.dataset.themeChoix); });
+  });
+  appliquerTheme(document.documentElement.dataset.theme === "sombre" ? "sombre" : "clair");
+
   // ---------- Répondre et modifier ----------
   function nomDe(id) { return id === etat.moi ? "Toi" : (etat.membres.get(id) || "…"); }
   function resume(m) {
@@ -2745,7 +2782,8 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   function commencerEdition(m) {
     etat.reponse = null;
     etat.edition = m;
-    montrerBandeau("Modification", "Change le texte puis valide");
+    if (m.file_path) montrerBandeau(m.body ? "Légende" : "Ajouter une légende", /^image\//.test(m.file_type || "") ? "Texte sous la photo" : "Texte sous « " + (m.file_name || "le fichier") + " »");
+    else montrerBandeau("Modification", "Change le texte puis valide");
     $("envoyer-texte").textContent = "Valider";
     var c = $("texte");
     c.value = m.body || "";
@@ -2755,9 +2793,9 @@ Resources:`;for(let t of c){if(!t||typeof t!=`string`)throw Error(`@supabase/aut
   }
   async function enregistrerModification(texte) {
     var m = etat.edition;
-    if (!texte) { avis("Le message ne peut pas être vide : pour l'effacer, utilise Supprimer."); return; }
-    if (texte === m.body) { fermerBandeau(); return; }
-    var r = await sb.from("messages").update({ body: texte }).eq("id", m.id).select().single();
+    if (!texte && !m.file_path) { avis("Le message ne peut pas être vide : pour l'effacer, utilise Supprimer."); return; }
+    if (texte === (m.body || "")) { fermerBandeau(); return; }
+    var r = await sb.from("messages").update({ body: texte || null }).eq("id", m.id).select().single();
     if (r.error) { avis("La modification a échoué. Vérifie ta connexion et réessaie."); return; }
     etat.messages.set(r.data.id, r.data);
     fermerBandeau();

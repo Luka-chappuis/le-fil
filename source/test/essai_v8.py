@@ -300,7 +300,7 @@ with sync_playwright() as p:
     verifier("pdf : toujours une fiche avec boutons", page.locator(".fichier-actions button").count() == 2)
     verifier("réponse : citation du message d'origine", "Tu as le devis" in page.inner_text(".ligne[data-id='3'] .citation"))
     verifier("modifié : mention affichée", page.locator(".ligne[data-id='5'] .modifie").count() == 1)
-    verifier("modifier : proposé seulement sur mes textes", page.locator(".ligne[data-id='3'] >> text=Modifier").count() == 1 and page.locator(".ligne[data-id='5'] >> text=Modifier").count() == 0 and page.locator(".ligne[data-id='2'] >> text=Modifier").count() == 0)
+    verifier("modifier : proposé sur mes textes et mes photos, pas sur ceux de Jules", page.locator(".ligne[data-id='3'] >> text=Modifier").count() == 1 and page.locator(".ligne[data-id='5'] >> text=Modifier").count() == 0 and page.locator(".ligne[data-id='2'] >> text=Modifier").count() == 1)
     page.screenshot(path=str(SORTIE / "v8-1-fil.png"))
 
     page.click(".photo-bouton")
@@ -328,6 +328,18 @@ with sync_playwright() as p:
     verifier("modifier : saisie vidée", page.input_value("#texte") == "")
     page.click(".ligne[data-id='3'] >> text=Modifier"); page.keyboard.press("Escape")
     verifier("modifier : Échap annule et vide la saisie", not page.is_visible("#bandeau") and page.input_value("#texte") == "")
+
+    # Légende d'une photo
+    page.click(".ligne[data-id='2'] >> text=Modifier")
+    verifier("légende : texte de la photo repris", page.input_value("#texte") == "Le stand hier" and "Légende" in page.inner_text("#bandeau"))
+    page.fill("#texte", "Le stand avant l'ouverture"); page.keyboard.press("Enter"); page.wait_for_timeout(500)
+    verifier("légende : modifiée sous la photo", "avant l'ouverture" in page.inner_text(".ligne[data-id='2'] .bulle.photo") and page.locator(".ligne[data-id='2'] .photo-bouton img").count() == 1)
+    page.click(".ligne[data-id='2'] >> text=Modifier"); page.fill("#texte", ""); page.keyboard.press("Enter"); page.wait_for_timeout(500)
+    verifier("légende : peut être retirée", s.modifs[-1].get("body") is None and page.locator(".ligne[data-id='2'] .legende").count() == 0, s.modifs[-1])
+    page.set_input_files("#selecteur", files=[{"name": "plan.png", "mimeType": "image/png", "buffer": PNG_ESSAI}])
+    page.fill("#texte", "Le plan final"); page.keyboard.press("Enter"); page.wait_for_timeout(800)
+    dernier = s.messages[-1]
+    verifier("légende : texte + une photo = un seul message", dernier.get("file_name") == "plan.png" and dernier.get("body") == "Le plan final" and not any(m.get("body") == "Le plan final" and not m.get("file_path") for m in s.messages), dernier)
 
     # « écrit… »
     page.wait_for_timeout(2700); avant = len(s.diffusions)
@@ -364,11 +376,22 @@ with sync_playwright() as p:
 
     verifier("aucune erreur de script", not [e for e in s.erreurs if "pageerror" in e], s.erreurs)
 
-    # Mode sombre + téléphone
+    # Apparence : clair par défaut, sombre au choix
     page.emulate_media(color_scheme="dark"); page.wait_for_timeout(200)
     fond = page.evaluate("getComputedStyle(document.body).backgroundColor")
-    verifier("mode sombre : fond sombre", fond == "rgb(15, 27, 30)", fond)
+    verifier("apparence : reste claire même si l'appareil est en sombre", fond == "rgb(237, 242, 241)", fond)
+    page.click("#ouvrir-reglages"); page.click("[data-theme-choix='sombre']"); page.wait_for_timeout(200)
+    page.screenshot(path=str(SORTIE / "v8-7-reglages-sombre.png"))
+    page.click("#reglages-retour")
+    fond = page.evaluate("getComputedStyle(document.body).backgroundColor")
+    verifier("apparence : sombre une fois choisi", fond == "rgb(15, 27, 30)", fond)
+    page.reload(); page.wait_for_selector("#vue-fil:not([hidden])"); page.wait_for_timeout(800)
+    fond = page.evaluate("getComputedStyle(document.body).backgroundColor")
+    verifier("apparence : choix gardé à la réouverture", fond == "rgb(15, 27, 30)", fond)
     page.screenshot(path=str(SORTIE / "v8-7-sombre.png"))
+    page.click("#ouvrir-reglages"); page.click("[data-theme-choix='clair']"); page.click("#reglages-retour")
+    fond = page.evaluate("getComputedStyle(document.body).backgroundColor")
+    verifier("apparence : retour au clair", fond == "rgb(237, 242, 241)", fond)
     ctx.close()
 
     ctx = nav.new_context(viewport={"width": 390, "height": 844}, locale="fr-FR", timezone_id="Europe/Paris", is_mobile=True, has_touch=True)
@@ -377,7 +400,7 @@ with sync_playwright() as p:
     page.goto(PAGE); page.wait_for_selector("#vue-fil:not([hidden])"); page.wait_for_timeout(1200)
     page.click(".ligne[data-id='1'] >> text=Répondre")
     page.screenshot(path=str(SORTIE / "v8-8-mobile.png"))
-    page.emulate_media(color_scheme="dark"); page.wait_for_timeout(200)
+    page.evaluate("document.documentElement.dataset.theme = 'sombre'"); page.wait_for_timeout(200)
     page.screenshot(path=str(SORTIE / "v8-9-mobile-sombre.png"))
     verifier("mobile : aucune erreur de script", not [e for e in s.erreurs if "pageerror" in e], s.erreurs)
     ctx.close(); nav.close()

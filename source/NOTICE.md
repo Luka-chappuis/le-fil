@@ -40,6 +40,6 @@ outils en haut (calculatrice, prix et marges avec commission, convertisseur avec
 mots magiques gérés dans Réglages (roue dentée) : la photo passe au premier plan quelques secondes.
 
 Ajouts v8 : photos affichées dans le fil (agrandies au clic, réduites à 2560 px avant l'envoi), réponse à un message précis,
-modification de ses messages, « Jules écrit… » (diffusion temps réel, rien n'est enregistré), recherche (loupe),
-messages vocaux (micro), mode sombre automatique, pastille de non-lus sur l'icône, messages écrits hors connexion
+modification de ses messages et des légendes de photos/fichiers (un texte envoyé avec un seul fichier devient sa légende), « Jules écrit… » (diffusion temps réel, rien n'est enregistré), recherche (loupe),
+messages vocaux (micro), mode sombre en option (Réglages, clair par défaut, choix gardé par appareil), pastille de non-lus sur l'icône, messages écrits hors connexion
 gardés sur l'appareil et envoyés au retour du réseau.
