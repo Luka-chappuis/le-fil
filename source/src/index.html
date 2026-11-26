@@ -1,0 +1,3052 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EDF2F1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Le fil">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icone-180.png">
+<title>Le fil</title>
+<link rel="icon" id="icone" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23EDF2F1'/%3E%3Cpath d='M16 0v32' stroke='%23D62839' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23D62839'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --brume: #EDF2F1;
+  --papier: #FFFFFF;
+  --encre: #12262B;
+  --lac: #0E4F5E;
+  --lac-fonce: #0A3D49;
+  --fil: #D62839;
+  --doux: #4F6469;
+  --trait: #CDDAD8;
+  --alerte: #A11D2B;
+  --colonne: 880px;
+  --police-texte: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--brume);
+  color: var(--encre);
+  font-family: "Bricolage Grotesque", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--lac); outline-offset: 2px; }
+.visuellement-cache {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* ---------- Boutons ---------- */
+.bouton {
+  border: 0; border-radius: 10px; padding: 11px 18px;
+  background: var(--lac); color: #fff; font-weight: 600;
+}
+.bouton:hover { background: var(--lac-fonce); }
+.bouton:disabled { opacity: .55; cursor: default; }
+.bouton-second {
+  border: 0; border-radius: 9px; padding: 8px 14px; font-weight: 600; font-size: 15px;
+  background: var(--brume); color: var(--lac);
+}
+.bouton-second:hover { background: #E0E9E7; }
+.bouton-second:disabled { opacity: .5; cursor: default; }
+.bouton-discret {
+  border: 0; background: none; padding: 6px 8px; border-radius: 8px;
+  color: var(--doux); font-size: 14px;
+}
+.bouton-discret:hover { color: var(--encre); background: rgba(18, 38, 43, .06); }
+.bouton-icone {
+  width: 36px; height: 36px; border: 0; border-radius: 9px; background: none;
+  color: var(--doux); display: grid; place-items: center; flex: none;
+}
+.bouton-icone:hover { background: rgba(18, 38, 43, .06); color: var(--encre); }
+
+/* ---------- Écrans simples : chargement, accueil, erreur ---------- */
+.ecran {
+  min-height: 100%; display: grid; justify-items: center; align-content: start;
+  padding: 0 20px 48px;
+}
+.amorce { width: 2px; height: 22vh; min-height: 90px; background: var(--fil); }
+.amorce-noeud {
+  width: 14px; height: 14px; border-radius: 50%; background: var(--fil);
+  margin-top: -1px;
+}
+.carte { width: 100%; max-width: 380px; text-align: center; }
+.titre {
+  margin: 18px 0 6px; font-size: 60px; line-height: 1; font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.sous-titre { margin: 0 0 28px; color: var(--doux); }
+.onglets {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px;
+  background: rgba(18, 38, 43, .07); border-radius: 12px; margin-bottom: 18px;
+}
+.onglet {
+  border: 0; background: none; border-radius: 9px; padding: 9px 8px;
+  color: var(--doux); font-weight: 500;
+}
+.onglet[aria-selected="true"] { background: var(--papier); color: var(--encre); font-weight: 600; }
+.formulaire { display: grid; gap: 14px; text-align: left; }
+.champ { display: grid; gap: 5px; }
+.champ label { font-size: 14px; font-weight: 500; }
+.champ input, .champ select, .champ textarea {
+  width: 100%; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid var(--trait); background: var(--papier);
+}
+.champ input:focus-visible, .champ select:focus-visible, .champ textarea:focus-visible { outline-offset: 0; border-color: var(--lac); }
+.aide { font-size: 13px; color: var(--doux); margin: 0; }
+.erreur { margin: 0; color: var(--alerte); font-size: 14.5px; font-weight: 500; }
+.note { margin: 18px 0 0; font-size: 14px; color: var(--doux); }
+.message-ecran { margin: 22px 0 18px; }
+.message-ecran strong { display: block; font-size: 20px; margin-bottom: 6px; }
+
+/* ---------- Le fil ---------- */
+.app { padding-top: env(safe-area-inset-top); height: 100vh; height: 100dvh; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; }
+.entete {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+  padding: 8px 20px; border-bottom: 1px solid var(--trait);
+}
+.entete-noms { font-size: 14.5px; color: var(--doux); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entete-titre { margin: 0; font-size: 26px; line-height: 1; font-weight: 800; letter-spacing: -0.03em; }
+.entete-droite { display: flex; justify-content: flex-end; align-items: center; gap: 4px; min-width: 0; }
+.presence { display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: var(--doux); white-space: nowrap; margin-right: 6px; }
+.presence-point { width: 8px; height: 8px; border-radius: 50%; background: var(--trait); flex: none; }
+.presence[data-etat="en-ligne"] { color: var(--encre); }
+.presence[data-etat="en-ligne"] .presence-point { background: #1E9E6A; }
+.cloche[aria-pressed="true"] { color: var(--lac); }
+.cloche[aria-pressed="false"] .cloche-onde { display: none; }
+.cloche[aria-pressed="true"] .cloche-barre { display: none; }
+
+.flux { overflow-y: auto; scrollbar-gutter: stable both-edges; }
+.piste {
+  position: relative; max-width: var(--colonne); min-height: 100%;
+  margin: 0 auto; padding: 18px 16px 22px;
+}
+.piste::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 50%;
+  width: 2px; margin-left: -1px; background: var(--fil);
+}
+.plus-anciens { position: relative; display: grid; justify-items: center; margin-bottom: 8px; }
+.plus-anciens .bouton-discret { background: var(--brume); }
+.jour {
+  position: relative; display: block; width: max-content; margin: 20px auto 12px;
+  padding: 3px 12px; background: var(--brume); color: var(--doux); font-size: 13.5px;
+}
+.ligne {
+  position: relative; display: grid; grid-template-columns: 1fr 34px 1fr;
+  align-items: start; margin: 8px 0;
+}
+.noeud {
+  grid-column: 2; grid-row: 1; justify-self: center; margin-top: 15px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--fil); box-shadow: 0 0 0 3px var(--brume);
+}
+.contenu { grid-row: 1; min-width: 0; display: grid; }
+.ligne.moi .contenu { grid-column: 3; justify-items: start; }
+.ligne.autre .contenu { grid-column: 1; justify-items: end; }
+.bulle {
+  max-width: min(100%, 420px); padding: 10px 14px; border-radius: 14px;
+  background: var(--papier); box-shadow: inset 0 0 0 1px var(--trait);
+  overflow-wrap: anywhere; white-space: pre-wrap;
+}
+.bulle.grand { font-size: 40px; line-height: 1.15; padding: 4px 6px; background: none !important; box-shadow: none !important; }
+.ligne.autre .bulle { border-top-right-radius: 4px; }
+.ligne.moi .bulle { border-top-left-radius: 4px; background: var(--lac); color: #fff; box-shadow: none; }
+.bulle a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.ligne.autre .bulle a { color: var(--lac); }
+.reactions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.reaction {
+  border: 0; border-radius: 999px; padding: 2px 9px 2px 7px; font-size: 14px;
+  background: var(--papier); box-shadow: inset 0 0 0 1px var(--trait); color: var(--doux);
+}
+.reaction[aria-pressed="true"] { box-shadow: inset 0 0 0 1.5px var(--lac); color: var(--lac); font-weight: 600; }
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; margin-top: 3px; font-size: 12.5px; color: var(--doux); }
+.ligne.autre .meta { justify-content: flex-end; }
+.meta .bouton-discret { font-size: 12.5px; padding: 2px 6px; }
+.meta .bouton-discret.confirmer { color: var(--alerte); font-weight: 600; }
+.meta .vu { color: var(--lac); font-weight: 600; margin-left: 4px; }
+.choix-reaction { display: inline-flex; gap: 1px; }
+.choix-reaction button { border: 0; background: none; border-radius: 7px; padding: 1px 4px; font-size: 18px; line-height: 1.2; }
+.choix-reaction button:hover { background: rgba(18, 38, 43, .08); }
+
+.fichier { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; white-space: normal; }
+.fichier-type {
+  width: 44px; height: 44px; border-radius: 9px; display: grid; place-items: center;
+  font-size: 13px; font-weight: 700; background: var(--brume); color: var(--lac);
+}
+.ligne.moi .fichier-type { background: rgba(255, 255, 255, .16); color: #fff; }
+.fichier-nom { font-weight: 600; line-height: 1.3; }
+.fichier-poids { font-size: 13px; opacity: .75; }
+.fichier-actions { grid-column: 1 / -1; display: flex; gap: 8px; }
+.fichier-actions button {
+  border: 0; border-radius: 8px; padding: 6px 12px; font-size: 14px; font-weight: 600;
+  background: var(--brume); color: var(--lac);
+}
+.fichier-actions button:hover { background: #E0E9E7; }
+.ligne.moi .fichier-actions button { background: rgba(255, 255, 255, .16); color: #fff; }
+.ligne.moi .fichier-actions button:hover { background: rgba(255, 255, 255, .26); }
+.ligne.moi .bulle :focus-visible { outline-color: #fff; }
+.legende { margin-top: 8px; }
+
+.vide {
+  position: relative; width: min(100%, 440px); margin: 12vh auto 0; padding: 20px 22px;
+  background: var(--brume); text-align: center; color: var(--doux);
+}
+.vide strong { display: block; color: var(--encre); font-size: 20px; margin-bottom: 6px; }
+
+/* ---------- Pied : saisie et panneau d'outils ---------- */
+.pied { border-top: 1px solid var(--trait); padding: 10px 16px calc(14px + env(safe-area-inset-bottom)); }
+.pied-colonne { max-width: var(--colonne); margin: 0 auto; }
+.invite {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px;
+  padding: 10px 14px; border-radius: 12px; background: var(--papier); box-shadow: inset 0 0 0 1px var(--trait);
+}
+.invite span { flex: 1 1 220px; }
+.en-attente { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.puce {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
+  padding: 5px 6px 5px 11px; border-radius: 999px; background: var(--papier);
+  box-shadow: inset 0 0 0 1px var(--trait); font-size: 14px;
+}
+.puce span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.puce button {
+  border: 0; background: none; width: 24px; height: 24px; border-radius: 50%;
+  color: var(--doux); line-height: 1; font-size: 17px; flex: none;
+}
+.puce button:hover { background: var(--brume); color: var(--encre); }
+.saisie { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: end; }
+.carre {
+  position: relative; width: 46px; height: 46px; border-radius: 12px; border: 1px solid var(--trait);
+  background: var(--papier); color: var(--lac); display: grid; place-items: center;
+}
+.carre:hover, .carre[aria-expanded="true"] { border-color: var(--lac); }
+.pastille {
+  position: absolute; top: -6px; right: -6px; min-width: 19px; height: 19px; padding: 0 5px;
+  border-radius: 999px; background: var(--fil); color: #fff; font-size: 12px; font-weight: 700;
+  display: grid; place-items: center; line-height: 1;
+}
+.zone-texte { position: relative; min-width: 0; display: grid; }
+.zone-texte textarea {
+  width: 100%; min-height: 46px; max-height: 180px; resize: none; padding: 11px 46px 11px 14px;
+  border-radius: 12px; border: 1px solid var(--trait); background: var(--papier);
+  line-height: 1.45;
+}
+.zone-texte textarea:focus-visible { outline-offset: 0; border-color: var(--lac); }
+.zone-texte .bouton-icone { position: absolute; right: 5px; bottom: 5px; }
+.saisie .bouton { height: 46px; border-radius: 12px; display: grid; place-items: center; }
+.envoyer-icone { display: none; }
+.etat-liaison { margin: 6px 0 0; font-size: 13px; color: var(--doux); }
+
+.panneau {
+  margin-bottom: 10px; background: var(--papier); border-radius: 14px;
+  box-shadow: inset 0 0 0 1px var(--trait); overflow: hidden;
+}
+.panneau-tete { display: flex; align-items: stretch; border-bottom: 1px solid var(--trait); padding: 0 4px 0 6px; }
+.panneau-onglets { display: flex; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.panneau-onglets::-webkit-scrollbar { display: none; }
+.panneau-onglet {
+  border: 0; background: none; padding: 11px 12px 9px; white-space: nowrap; color: var(--doux);
+  font-weight: 500; border-bottom: 2px solid transparent;
+}
+.panneau-onglet:hover { color: var(--encre); }
+.panneau-onglet[aria-selected="true"] { color: var(--encre); font-weight: 600; border-bottom-color: var(--fil); }
+.panneau-tete .bouton-icone { align-self: center; }
+.panneau-corps { padding: 14px; max-height: min(46vh, 400px); overflow-y: auto; }
+.volet-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.resultat { margin: 0; font-size: 15px; }
+.resultat dt { color: var(--doux); float: left; clear: left; }
+.resultat dd { margin: 0 0 4px; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.deux-colonnes { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 20px 28px; }
+.formule { margin: 6px 0 0; font-size: 13.5px; color: var(--doux); }
+.volet-titre { margin: 0 0 10px; font-size: 15px; font-weight: 700; }
+.rangee { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.volet .champ { margin-bottom: 10px; }
+
+.emojis-groupe { margin: 0 0 4px; font-size: 13px; color: var(--doux); }
+.emojis-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 2px; margin-bottom: 10px; }
+.emojis-grille button { border: 0; background: none; border-radius: 8px; height: 40px; font-size: 23px; line-height: 1; }
+.emojis-grille button:hover { background: var(--brume); }
+
+.calc { max-width: 320px; }
+.calc-ecran { border: 1px solid var(--trait); border-radius: 12px; padding: 8px 12px; margin-bottom: 10px; }
+.calc-ecran input {
+  width: 100%; border: 0; padding: 0; background: none; font-size: 22px; font-weight: 600;
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+.calc-ecran input:focus-visible { outline: none; }
+.calc-apercu { min-height: 20px; text-align: right; font-size: 14px; color: var(--doux); font-variant-numeric: tabular-nums; }
+.calc-touches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.calc-touches button {
+  border: 0; border-radius: 10px; height: 42px; font-size: 17px; font-weight: 600;
+  background: var(--brume);
+}
+.calc-touches button:hover { background: #E0E9E7; }
+.calc-touches .op { color: var(--lac); }
+.calc-touches .egal { background: var(--lac); color: #fff; }
+.calc-touches .egal:hover { background: var(--lac-fonce); }
+
+.liste-ajout { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 10px; }
+.liste-ajout input { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--trait); min-width: 0; }
+.taches { list-style: none; margin: 0; padding: 0; }
+.tache { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--brume); }
+.tache input { width: 19px; height: 19px; accent-color: var(--lac); }
+.tache.faite label { color: var(--doux); text-decoration: line-through; }
+.tache label { overflow-wrap: anywhere; }
+.ancienne-redaction-sortie {
+  margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: var(--brume);
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+
+.avis {
+  position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%);
+  max-width: min(92vw, 480px); padding: 10px 16px; border-radius: 10px;
+  background: var(--encre); color: #fff; font-size: 14.5px; z-index: 20;
+}
+.depot {
+  position: fixed; inset: 0; z-index: 30; display: grid; place-items: center;
+  background: rgba(14, 79, 94, .9); color: #fff; font-size: 26px; font-weight: 700;
+  letter-spacing: -0.01em; pointer-events: none;
+}
+
+/* ---------- Barre d'outils en haut ---------- */
+.barre-outils {
+  grid-column: 1 / -1; display: flex; justify-content: center; gap: 2px;
+  margin: 2px -20px -9px; padding: 0 12px; overflow-x: auto; scrollbar-width: none;
+}
+.barre-outils::-webkit-scrollbar { display: none; }
+.outil {
+  position: relative; border: 0; background: none; padding: 8px 12px 8px; white-space: nowrap;
+  color: var(--doux); font-weight: 500; font-size: 15px; border-bottom: 2px solid transparent;
+}
+.outil:hover { color: var(--encre); }
+.outil[aria-expanded="true"] { color: var(--encre); font-weight: 600; border-bottom-color: var(--fil); }
+.outil .pastille { position: static; display: inline-grid; margin-left: 4px; vertical-align: 1px; }
+.entete { grid-row: 1; }
+.zone-outils { grid-row: 2; padding: 10px 16px 0; border-bottom: 1px solid var(--trait); }
+.flux { grid-row: 3; }
+.pied { grid-row: 4; }
+.zone-outils .panneau { max-width: var(--colonne); margin: 0 auto 10px; }
+.panneau-titre { flex: 1; margin: 0; padding: 11px 8px 10px; font-size: 15px; font-weight: 700; }
+
+/* ---------- Images-émojis ---------- */
+.images-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; margin-bottom: 12px; }
+.image-tuile {
+  border: 0; border-radius: 12px; background: var(--brume); padding: 6px 4px 5px;
+  display: grid; justify-items: center; gap: 3px; font-size: 12.5px; color: var(--doux);
+}
+.image-tuile:hover { background: #E0E9E7; color: var(--encre); }
+.image-tuile img { width: 64px; height: 64px; object-fit: contain; }
+.bulle.image-emoji { padding: 0; background: none !important; box-shadow: none !important; }
+.bulle.image-emoji img { display: block; width: 150px; height: 150px; object-fit: contain; }
+
+/* ---------- Menu des notifications ---------- */
+.cloche-zone { position: relative; }
+.menu-notifs {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 12; width: 270px;
+  background: var(--papier); border-radius: 14px; padding: 14px; text-align: left;
+  box-shadow: 0 0 0 1px var(--trait), 0 12px 32px rgba(18, 38, 43, .16);
+}
+.interrupteur { display: flex; align-items: center; gap: 10px; font-weight: 600; margin-bottom: 12px; cursor: pointer; }
+.interrupteur input { width: 19px; height: 19px; accent-color: var(--lac); }
+.rangee-son { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.notifs-appareil { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--brume); font-size: 14px; color: var(--doux); }
+.notifs-appareil .bouton-second { margin-top: 8px; }
+.notifs-appareil strong { color: var(--encre); font-weight: 600; }
+
+/* ---------- Page Rédaction ---------- */
+.outil-redaction { color: var(--lac); font-weight: 600; }
+.redac {
+  position: fixed; inset: 0; z-index: 8; overflow-y: auto; background: var(--brume);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.redac-tete {
+  position: sticky; top: 0; z-index: 2; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  padding: 10px 20px; background: var(--brume); border-bottom: 1px solid var(--trait);
+}
+.redac-tete h2 { margin: 0; font-size: 26px; line-height: 1; font-weight: 800; letter-spacing: -0.03em; }
+.redac-tete .bouton-discret { justify-self: start; font-size: 15px; }
+.redac-moteur { justify-self: end; font-size: 13px; color: var(--doux); text-align: right; }
+.redac-corps {
+  max-width: 1120px; margin: 0 auto; padding: 20px; display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start;
+}
+.redac-colonne { display: grid; gap: 16px; min-width: 0; }
+.redac-source { background: var(--papier); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--trait); }
+.redac-source textarea {
+  font-family: var(--police-texte); white-space: pre-wrap;
+  display: block; width: 100%; min-height: 240px; max-height: 55vh; resize: vertical; border: 0; background: none;
+  padding: 16px 18px; font-size: 16.5px; line-height: 1.55; border-radius: 16px 16px 0 0;
+}
+.redac-source textarea:focus-visible { outline: 2px solid var(--lac); outline-offset: -2px; }
+.redac-source-pied { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-top: 1px solid var(--brume); }
+.redac-compte { margin-left: auto; font-size: 13px; color: var(--doux); padding-right: 6px; }
+.redac-actions { display: grid; gap: 14px; }
+.redac-principal { width: 100%; height: 52px; font-size: 17px; border-radius: 13px; }
+.redac-groupe { display: grid; gap: 6px; }
+.redac-libelle { font-size: 14px; font-weight: 600; }
+.puces { display: flex; flex-wrap: wrap; gap: 6px; }
+.puce-choix {
+  border: 0; border-radius: 999px; padding: 8px 14px; background: var(--papier); color: var(--encre);
+  box-shadow: inset 0 0 0 1px var(--trait); font-size: 15px;
+}
+.puce-choix:hover { box-shadow: inset 0 0 0 1.5px var(--lac); color: var(--lac); }
+.puce-choix:disabled { opacity: .45; cursor: default; box-shadow: inset 0 0 0 1px var(--trait); color: var(--doux); }
+.redac-libre { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.redac-libre input { min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--trait); background: var(--papier); }
+.redac-libre input:disabled { opacity: .5; }
+.redac-resultat { background: var(--papier); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--trait); padding: 16px 18px; }
+.redac-resultat-tete { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.bascule { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--brume); }
+.bascule button { border: 0; background: none; border-radius: 8px; padding: 5px 10px; font-size: 14px; color: var(--doux); }
+.bascule button[aria-pressed="true"] { background: var(--papier); color: var(--encre); font-weight: 600; }
+.redac-sortie { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 16px; line-height: 1.6; font-family: var(--police-texte); }
+.redac-sortie del { color: var(--alerte); text-decoration-thickness: 1.5px; background: #FBE7E9; border-radius: 3px; }
+.redac-sortie ins { color: #0B6B45; text-decoration: none; background: #DDF3E8; border-radius: 3px; }
+.redac-fautes { list-style: none; margin: 14px 0 0; padding: 12px 0 0; border-top: 1px solid var(--brume); display: grid; gap: 8px; font-size: 14.5px; }
+.redac-fautes li { display: grid; gap: 2px; }
+.redac-fautes .avant-apres { font-weight: 600; }
+.redac-fautes .avant-apres del { color: var(--alerte); }
+.redac-fautes .avant-apres ins { color: #0B6B45; text-decoration: none; }
+.redac-fautes .explication { color: var(--doux); }
+.redac-attente, .redac-vide { padding: 26px 22px; border-radius: 16px; background: var(--papier); box-shadow: inset 0 0 0 1px var(--trait); color: var(--doux); }
+.redac-vide strong { display: block; color: var(--encre); font-size: 19px; margin-bottom: 4px; }
+.redac-vide p { margin: 0; }
+.redac-historique { background: var(--papier); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--trait); padding: 4px 16px; }
+.redac-historique summary { cursor: pointer; padding: 10px 0; font-weight: 600; }
+.redac-historique ul { list-style: none; margin: 0; padding: 0 0 8px; display: grid; gap: 4px; }
+.redac-historique li button {
+  width: 100%; text-align: left; border: 0; background: var(--brume); border-radius: 10px; padding: 8px 10px;
+  font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.redac-historique li button span { color: var(--doux); margin-right: 6px; }
+
+/* ---------- Réglages : mots magiques ---------- */
+.reglages-corps { max-width: 760px; margin: 0 auto; padding: 22px 20px 40px; }
+.reglages-titre { margin: 0 0 4px; font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
+.reglages-intro { margin: 0 0 18px; color: var(--doux); max-width: 62ch; }
+.mot-ligne {
+  display: grid; grid-template-columns: minmax(0, 1fr) 132px; gap: 16px; align-items: center;
+  background: var(--papier); border-radius: 16px; box-shadow: inset 0 0 0 1px var(--trait); padding: 14px 14px 14px 18px;
+}
+.mot-ajout { margin-bottom: 8px; box-shadow: inset 0 0 0 1.5px var(--lac); }
+.mot-texte { display: grid; gap: 6px; min-width: 0; align-content: center; }
+.mot-texte label { font-size: 14px; font-weight: 600; }
+.mot-texte input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--trait); background: var(--papier); font-size: 17px; }
+.mot-texte input:focus-visible { outline-offset: 0; border-color: var(--lac); }
+.mot-texte .bouton { justify-self: start; margin-top: 4px; }
+.mot-image {
+  width: 132px; height: 132px; border-radius: 12px; background: var(--brume); display: grid; place-items: center;
+  overflow: hidden; position: relative;
+}
+.mot-image img { width: 100%; height: 100%; object-fit: contain; }
+.mot-image-choix { cursor: pointer; border: 2px dashed var(--trait); text-align: center; font-size: 14px; color: var(--lac); font-weight: 600; padding: 8px; }
+.mot-image-choix:hover, .mot-image-choix:focus-within { border-color: var(--lac); }
+.mot-image-choix img { position: absolute; inset: 0; }
+.mots-liste { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 10px; }
+.mot-nom { font-size: 20px; font-weight: 700; overflow-wrap: anywhere; }
+.mot-auteur { font-size: 13.5px; color: var(--doux); }
+.mot-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.mot-actions .confirmer { color: var(--alerte); font-weight: 600; }
+#mot-erreur { margin: 6px 0 0; }
+
+/* ---------- Mots magiques : une image géante passe devant le fil, sans bloquer les clics ---------- */
+.app { position: relative; z-index: 1; }
+.magie {
+  position: fixed; inset: 0; z-index: 15; display: grid; place-items: center;
+  pointer-events: none; overflow: hidden;
+}
+.magie img { width: min(86vw, 80vh); height: min(86vw, 80vh); object-fit: contain; opacity: 0; filter: drop-shadow(0 18px 40px rgba(18, 38, 43, .28)); }
+.magie.joue img { animation: magie 4.2s cubic-bezier(.2, .7, .3, 1) forwards; }
+/* Voile flouté derrière la photo : les messages s'effacent, la photo est seule au premier plan */
+.magie.joue {
+  animation: voile 4.2s ease forwards;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+@keyframes voile {
+  0%   { background: rgba(237, 242, 241, 0); }
+  12%  { background: rgba(237, 242, 241, .88); }
+  72%  { background: rgba(237, 242, 241, .88); }
+  100% { background: rgba(237, 242, 241, 0); }
+}
+@keyframes magie {
+  0%   { opacity: 0; transform: scale(.4) rotate(-10deg); }
+  14%  { opacity: 1; transform: scale(1.06) rotate(3deg); }
+  24%  { transform: scale(1) rotate(0); }
+  72%  { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 0; transform: scale(1.12); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .magie.joue img { animation: magie-doux 4.2s ease forwards; }
+  .magie.joue { animation: voile 4.2s ease forwards; }
+  @keyframes magie-doux { 0% { opacity: 0; } 15% { opacity: 1; } 72% { opacity: 1; } 100% { opacity: 0; } }
+}
+
+/* ---------- Écrans étroits : le fil passe à gauche ---------- */
+@media (max-width: 700px) {
+  .entete { grid-template-columns: auto 1fr; padding: 8px 10px 8px 14px; }
+  .barre-outils { justify-content: flex-start; margin: 2px -10px -9px -14px; padding: 0 6px; }
+  .zone-outils { padding: 8px 10px 0; }
+  .entete-noms { display: none; }
+  .flux { scrollbar-gutter: auto; }
+  .piste { padding: 14px 12px 18px 0; }
+  .piste::before { left: 21px; }
+  .ligne { grid-template-columns: 42px 1fr; }
+  .noeud { grid-column: 1; }
+  .ligne.moi .contenu, .ligne.autre .contenu { grid-column: 2; justify-items: start; }
+  .ligne.autre .bulle { border-top-right-radius: 14px; border-top-left-radius: 4px; }
+  .ligne.autre .meta { justify-content: flex-start; }
+  .bulle { max-width: min(100%, 520px); }
+  .jour { margin-left: 42px; padding-left: 0; background: none; }
+  .plus-anciens { justify-items: start; padding-left: 42px; }
+  .vide { margin: 8vh 12px 0 42px; width: auto; text-align: left; padding: 0; }
+  .titre { font-size: 50px; }
+  .presence-texte { display: none; }
+  .pied { padding: 10px 10px 12px; }
+  .saisie { gap: 6px; }
+  .saisie .bouton { width: 46px; padding: 0; }
+  .envoyer-texte { display: none; }
+  .envoyer-icone { display: block; }
+  .deux-colonnes { grid-template-columns: 1fr; }
+  .avis { bottom: 110px; }
+  .redac-corps { grid-template-columns: minmax(0, 1fr); padding: 14px 12px 28px; }
+  .redac-tete { padding: 8px 12px; }
+  .redac-tete h2 { font-size: 22px; }
+  .redac-source textarea { min-height: 180px; }
+  .reglages-corps { padding: 16px 12px 32px; }
+  .mot-ligne { grid-template-columns: minmax(0, 1fr) 96px; gap: 12px; padding: 12px; }
+  .mot-image { width: 96px; height: 96px; }
+  .mot-nom { font-size: 18px; }
+  .menu-notifs { position: fixed; left: 12px; right: 12px; top: 58px; width: auto; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bouton, .bouton-second, .bouton-discret, .bouton-icone, .onglet, .carre, .fichier-actions button, .calc-touches button {
+    transition: background-color .12s, color .12s, border-color .12s;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Chargement -->
+<div id="vue-chargement" class="ecran">
+  <div class="amorce"></div><div class="amorce-noeud"></div>
+  <div class="carte">
+    <h1 class="titre">Le fil</h1>
+    <p class="sous-titre" id="chargement-texte">Ouverture…</p>
+    <button class="bouton" id="chargement-reessayer" hidden>Réessayer</button>
+  </div>
+</div>
+
+<!-- Accueil : connexion ou création de compte -->
+<div id="vue-accueil" class="ecran" hidden>
+  <div class="amorce"></div><div class="amorce-noeud"></div>
+  <div class="carte">
+    <h1 class="titre">Le fil</h1>
+    <p class="sous-titre">Un fil privé pour deux : messages, liens et fichiers.</p>
+    <div class="onglets" role="tablist" id="onglets">
+      <button class="onglet" role="tab" id="onglet-connexion" aria-selected="true">Se connecter</button>
+      <button class="onglet" role="tab" id="onglet-creation" aria-selected="false">Créer mon compte</button>
+    </div>
+    <form class="formulaire" id="formulaire" novalidate>
+      <div class="champ" id="champ-prenom" hidden>
+        <label for="prenom">Prénom</label>
+        <input id="prenom" name="prenom" type="text" maxlength="40" autocomplete="given-name">
+      </div>
+      <div class="champ">
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" autocomplete="email" required>
+      </div>
+      <div class="champ">
+        <label for="motdepasse">Mot de passe</label>
+        <input id="motdepasse" name="motdepasse" type="password" autocomplete="current-password" required>
+        <p class="aide" id="aide-motdepasse" hidden>8 caractères au minimum.</p>
+      </div>
+      <p class="erreur" id="accueil-erreur" role="alert" hidden></p>
+      <button class="bouton" type="submit" id="accueil-valider">Se connecter</button>
+    </form>
+    <p class="note" id="accueil-note" hidden></p>
+  </div>
+</div>
+
+<!-- Compte hors du fil -->
+<div id="vue-exclu" class="ecran" hidden>
+  <div class="amorce"></div><div class="amorce-noeud"></div>
+  <div class="carte">
+    <h1 class="titre">Le fil</h1>
+    <p class="message-ecran"><strong>Ce fil est déjà complet</strong>Il est réservé à deux personnes, et ce compte n'en fait pas partie.</p>
+    <button class="bouton" id="exclu-deconnexion">Se déconnecter</button>
+  </div>
+</div>
+
+<!-- Mots magiques -->
+<div class="magie" id="magie" aria-hidden="true"></div>
+
+<!-- Le fil -->
+<div id="vue-fil" class="app" hidden>
+  <header class="entete">
+    <div class="entete-noms" id="entete-noms"></div>
+    <h1 class="entete-titre">Le fil</h1>
+    <div class="entete-droite">
+      <span class="presence" id="presence" data-etat="absent"><span class="presence-point"></span><span class="presence-texte" id="presence-texte"></span></span>
+      <button class="bouton-icone" id="ouvrir-reglages" type="button" aria-label="Réglages" title="Réglages">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+      <div class="cloche-zone">
+        <button class="bouton-icone cloche" id="cloche" aria-pressed="true" aria-expanded="false" aria-haspopup="true" aria-label="Notifications et son" title="Notifications et son">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/>
+            <path class="cloche-barre" d="M3 3l18 18"/>
+            <path class="cloche-onde" d="M20.5 3.5a9 9 0 011.5 4"/>
+          </svg>
+        </button>
+        <div class="menu-notifs" id="menu-notifs" role="dialog" aria-label="Notifications et son" hidden>
+          <label class="interrupteur"><input type="checkbox" id="notifs-actives" checked> <span>Notifications</span></label>
+          <div class="champ">
+            <label for="notifs-son">Son</label>
+            <div class="rangee-son">
+              <select id="notifs-son">
+                <option value="carillon">Carillon</option>
+                <option value="bulle">Bulle</option>
+                <option value="cloche">Clochette</option>
+                <option value="pop">Pop</option>
+                <option value="arpege">Arpège</option>
+                <option value="aucun">Aucun son</option>
+              </select>
+              <button class="bouton-second" type="button" id="notifs-ecouter">Écouter</button>
+            </div>
+          </div>
+          <div class="notifs-appareil" id="notifs-appareil"></div>
+        </div>
+      </div>
+      <button class="bouton-discret" id="deconnexion">Se déconnecter</button>
+    </div>
+    <nav class="barre-outils" id="barre-outils" aria-label="Outils">
+      <button class="outil" type="button" data-volet="calc" aria-expanded="false">Calculatrice</button>
+      <button class="outil" type="button" data-volet="tva" aria-expanded="false">Prix et marges</button>
+      <button class="outil" type="button" data-volet="conv" aria-expanded="false">Convertisseur</button>
+      <button class="outil" type="button" data-volet="liste" aria-expanded="false">Liste à deux <span class="pastille" id="pastille-taches" hidden></span></button>
+      <button class="outil outil-redaction" type="button" id="ouvrir-redaction">Rédaction</button>
+    </nav>
+  </header>
+
+  <section class="zone-outils" id="zone-outils" aria-label="Outil ouvert" hidden>
+    <div class="panneau">
+      <div class="panneau-tete">
+        <h2 class="panneau-titre" id="panneau-titre"></h2>
+        <button class="bouton-icone" id="panneau-fermer" type="button" aria-label="Fermer l'outil">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="panneau-corps">
+
+
+          <div class="volet" id="volet-calc" hidden>
+            <div class="calc">
+              <div class="calc-ecran">
+                <label class="visuellement-cache" for="calc-saisie">Calcul</label>
+                <input id="calc-saisie" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
+                <div class="calc-apercu" id="calc-apercu"></div>
+              </div>
+              <div class="calc-touches" id="calc-touches">
+                <button type="button" data-t="C" class="op">C</button><button type="button" data-t="⌫" class="op" aria-label="Effacer le dernier caractère">⌫</button><button type="button" data-t="%" class="op">%</button><button type="button" data-t="÷" class="op">÷</button>
+                <button type="button" data-t="7">7</button><button type="button" data-t="8">8</button><button type="button" data-t="9">9</button><button type="button" data-t="×" class="op">×</button>
+                <button type="button" data-t="4">4</button><button type="button" data-t="5">5</button><button type="button" data-t="6">6</button><button type="button" data-t="−" class="op">−</button>
+                <button type="button" data-t="1">1</button><button type="button" data-t="2">2</button><button type="button" data-t="3">3</button><button type="button" data-t="+" class="op">+</button>
+                <button type="button" data-t="(" class="op">( )</button><button type="button" data-t="0">0</button><button type="button" data-t=",">,</button><button type="button" data-t="=" class="egal">=</button>
+              </div>
+              <div class="volet-actions"><button class="bouton-second" type="button" id="calc-inserer">Mettre dans le message</button></div>
+            </div>
+          </div>
+
+          <div class="volet" id="volet-tva" hidden>
+            <div class="deux-colonnes">
+              <div>
+                <h3 class="volet-titre">Commission</h3>
+                <div class="rangee">
+                  <div class="champ"><label for="com-net">Je veux toucher</label><input id="com-net" type="text" inputmode="decimal" autocomplete="off" placeholder="40"></div>
+                  <div class="champ"><label for="com-taux">Part prélevée (%)</label><input id="com-taux" type="text" inputmode="decimal" autocomplete="off" placeholder="23"></div>
+                </div>
+                <dl class="resultat" id="com-resultat"></dl>
+                <p class="formule" id="com-formule"></p>
+              </div>
+              <div>
+                <h3 class="volet-titre">TVA</h3>
+                <div class="rangee">
+                  <div class="champ"><label for="tva-montant">Montant</label><input id="tva-montant" type="text" inputmode="decimal" autocomplete="off"></div>
+                  <div class="champ"><label for="tva-taux">Taux</label>
+                    <select id="tva-taux"><option value="20">20 %</option><option value="10">10 %</option><option value="5.5">5,5 %</option><option value="2.1">2,1 %</option></select></div>
+                </div>
+                <div class="champ"><label for="tva-sens">Ce montant est</label>
+                  <select id="tva-sens"><option value="ht">hors taxes (HT)</option><option value="ttc">toutes taxes comprises (TTC)</option></select></div>
+                <dl class="resultat" id="tva-resultat"></dl>
+              </div>
+              <div>
+                <h3 class="volet-titre">Marge</h3>
+                <div class="rangee">
+                  <div class="champ"><label for="marge-achat">Prix d'achat HT</label><input id="marge-achat" type="text" inputmode="decimal" autocomplete="off"></div>
+                  <div class="champ"><label for="marge-vente">Prix de vente HT</label><input id="marge-vente" type="text" inputmode="decimal" autocomplete="off"></div>
+                </div>
+                <dl class="resultat" id="marge-resultat"></dl>
+              </div>
+            </div>
+            <div class="volet-actions"><button class="bouton-second" type="button" id="tva-inserer">Mettre dans le message</button></div>
+          </div>
+
+          <div class="volet" id="volet-conv" hidden>
+            <div class="champ"><label for="conv-famille">Grandeur</label>
+              <select id="conv-famille"></select></div>
+            <div class="rangee">
+              <div class="champ"><label for="conv-valeur">Valeur</label><input id="conv-valeur" type="text" inputmode="decimal" autocomplete="off" value="1"></div>
+              <div class="champ"><label for="conv-de">De</label><select id="conv-de"></select></div>
+            </div>
+            <div class="rangee">
+              <div class="champ"><label for="conv-vers">Vers</label><select id="conv-vers"></select></div>
+              <div class="champ"><label for="conv-sortie">Résultat</label><input id="conv-sortie" type="text" readonly></div>
+            </div>
+            <p class="aide" id="conv-note" hidden></p>
+            <div class="volet-actions">
+              <button class="bouton-second" type="button" id="conv-inverser">Inverser</button>
+              <button class="bouton-second" type="button" id="conv-inserer">Mettre dans le message</button>
+            </div>
+          </div>
+
+          <div class="volet" id="volet-liste" hidden>
+            <form class="liste-ajout" id="liste-ajout">
+              <label class="visuellement-cache" for="liste-texte">Chose à faire</label>
+              <input id="liste-texte" type="text" maxlength="200" placeholder="Ajouter une chose à faire" autocomplete="off">
+              <button class="bouton-second" type="submit">Ajouter</button>
+            </form>
+            <ul class="taches" id="taches"></ul>
+            <p class="aide" id="taches-vide" hidden>La liste est vide. Tout ce que vous y ajoutez est visible par vous deux.</p>
+          </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="redac" id="vue-reglages" aria-label="Réglages" hidden>
+    <div class="redac-tete">
+      <button class="bouton-discret" id="reglages-retour" type="button">Retour au fil</button>
+      <h2>Réglages</h2>
+      <span></span>
+    </div>
+    <div class="reglages-corps">
+      <h3 class="reglages-titre">Mots magiques</h3>
+      <p class="reglages-intro">Quand un message contient l'un de ces mots, son image passe en grand derrière le fil pendant quelques secondes. Les majuscules, les accents et le pluriel ne comptent pas.</p>
+      <form class="mot-ligne mot-ajout" id="mot-ajout" novalidate>
+        <div class="mot-texte">
+          <label for="mot-saisie">Nouveau mot ou expression</label>
+          <input id="mot-saisie" type="text" maxlength="40" autocomplete="off" placeholder="Par exemple : apéro">
+          <button class="bouton" type="submit" id="mot-ajouter">Ajouter</button>
+        </div>
+        <label class="mot-image mot-image-choix" for="mot-fichier" id="mot-image-choix">
+          <input type="file" id="mot-fichier" accept="image/png,image/jpeg,image/gif,image/webp,image/heic,image/heif" class="visuellement-cache">
+          <span id="mot-image-invite">Choisir une image</span>
+          <img id="mot-image-apercu" alt="" hidden>
+        </label>
+      </form>
+      <p class="erreur" id="mot-erreur" role="alert" hidden></p>
+      <ul class="mots-liste" id="mots-liste" aria-label="Mots magiques"></ul>
+      <p class="aide" id="mots-vide" hidden>Aucun mot magique pour l'instant : ajoute le premier ci-dessus.</p>
+    </div>
+  </section>
+
+  <section class="redac" id="vue-redaction" aria-label="Rédaction" hidden>
+    <div class="redac-tete">
+      <button class="bouton-discret" id="redac-retour" type="button">Retour au fil</button>
+      <h2>Rédaction</h2>
+      <span class="redac-moteur" id="redac-moteur"></span>
+    </div>
+    <div class="redac-corps">
+      <div class="redac-colonne">
+        <div class="redac-source">
+          <label class="visuellement-cache" for="redac-texte">Texte à travailler</label>
+          <textarea id="redac-texte" maxlength="10000" placeholder="Colle ici ton mail, ton message ou n'importe quel texte"></textarea>
+          <div class="redac-source-pied">
+            <button class="bouton-second" type="button" id="redac-coller">Coller</button>
+            <button class="bouton-discret" type="button" id="redac-effacer">Effacer</button>
+            <span class="redac-compte" id="redac-compte"></span>
+          </div>
+        </div>
+        <div class="redac-actions">
+          <button class="bouton redac-principal" type="button" id="redac-corriger">Corriger les fautes</button>
+          <div class="redac-groupe">
+            <span class="redac-libelle">Reformuler</span>
+            <div class="puces" id="redac-tons">
+              <button type="button" class="puce-choix" data-ton="mail">En mail pro</button>
+              <button type="button" class="puce-choix" data-ton="professionnel">Plus pro</button>
+              <button type="button" class="puce-choix" data-ton="clair">Plus clair</button>
+              <button type="button" class="puce-choix" data-ton="court">Plus court</button>
+              <button type="button" class="puce-choix" data-ton="poli">Plus poli</button>
+              <button type="button" class="puce-choix" data-ton="chaleureux">Plus chaleureux</button>
+              <button type="button" class="puce-choix" data-ton="simple">Plus simple</button>
+            </div>
+          </div>
+          <div class="redac-groupe">
+            <span class="redac-libelle">Traduire en</span>
+            <div class="puces" id="redac-langues">
+              <button type="button" class="puce-choix" data-langue="anglais">Anglais</button>
+              <button type="button" class="puce-choix" data-langue="espagnol">Espagnol</button>
+              <button type="button" class="puce-choix" data-langue="italien">Italien</button>
+              <button type="button" class="puce-choix" data-langue="allemand">Allemand</button>
+              <button type="button" class="puce-choix" data-langue="portugais">Portugais</button>
+              <button type="button" class="puce-choix" data-langue="français">Français</button>
+            </div>
+          </div>
+          <form class="redac-libre" id="redac-libre">
+            <label class="visuellement-cache" for="redac-consigne">Autre demande</label>
+            <input id="redac-consigne" type="text" maxlength="400" autocomplete="off" placeholder="Autre demande : vouvoie, ajoute une relance pour vendredi…">
+            <button class="bouton-second" type="submit">Appliquer</button>
+          </form>
+          <p class="aide" id="redac-note"></p>
+        </div>
+      </div>
+      <div class="redac-colonne">
+        <div class="redac-resultat" id="redac-resultat" hidden>
+          <div class="redac-resultat-tete">
+            <strong id="redac-titre"></strong>
+            <div class="bascule" role="group" aria-label="Affichage">
+              <button type="button" id="redac-voir-final" aria-pressed="true">Texte final</button>
+              <button type="button" id="redac-voir-diff" aria-pressed="false">Changements</button>
+            </div>
+          </div>
+          <div class="redac-sortie" id="redac-sortie"></div>
+          <ul class="redac-fautes" id="redac-fautes"></ul>
+          <div class="volet-actions">
+            <button class="bouton" type="button" id="redac-copier">Copier</button>
+            <button class="bouton-second" type="button" id="redac-garder">Retravailler ce texte</button>
+            <button class="bouton-second" type="button" id="redac-fil">Envoyer dans le fil</button>
+          </div>
+        </div>
+        <div class="redac-attente" id="redac-attente" hidden>Un instant…</div>
+        <div class="redac-vide" id="redac-vide">
+          <strong>En deux clics</strong>
+          <p>Colle ton texte, puis choisis « Corriger les fautes » ou une reformulation. Le résultat est copié tout seul, prêt à coller dans ton mail.</p>
+        </div>
+        <details class="redac-historique" id="redac-historique" hidden>
+          <summary>Derniers textes</summary>
+          <ul id="redac-histo-liste"></ul>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <main class="flux" id="flux">
+    <div class="piste" id="piste" role="log" aria-label="Messages"></div>
+  </main>
+
+  <footer class="pied">
+    <div class="pied-colonne">
+      <div class="invite" id="invite-notif" hidden>
+        <span id="invite-texte">Être prévenu par une notification à chaque nouveau message ?</span>
+        <button class="bouton-second" id="invite-oui" type="button">Activer</button>
+        <button class="bouton-discret" id="invite-non" type="button">Non merci</button>
+      </div>
+
+
+      <section class="panneau" id="panneau-emojis" aria-label="Émojis et images" hidden>
+        <div class="panneau-tete">
+          <h2 class="panneau-titre">Émojis et images</h2>
+          <button class="bouton-icone" id="emojis-fermer" type="button" aria-label="Fermer les émojis">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
+        <div class="panneau-corps" id="volet-emojis"></div>
+      </section>
+
+      <div class="en-attente" id="en-attente" hidden></div>
+      <form class="saisie" id="saisie">
+        <button type="button" class="carre" id="joindre" aria-label="Joindre un fichier" title="Joindre un fichier">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.4 11.1l-9.2 9.2a6 6 0 01-8.5-8.5l9.2-9.2a4 4 0 015.7 5.7l-9.2 9.1a2 2 0 01-2.8-2.8l8.5-8.5"/></svg>
+        </button>
+        <div class="zone-texte">
+          <label class="visuellement-cache" for="texte">Message</label>
+          <textarea id="texte" rows="1" maxlength="4000" placeholder="Écrire un message"></textarea>
+          <button type="button" class="bouton-icone" id="ouvrir-emojis" aria-label="Émojis et images" title="Émojis et images" aria-expanded="false">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 007 0"/><path d="M9 9.5v.5M15 9.5v.5"/></svg>
+          </button>
+        </div>
+        <button class="bouton" type="submit" id="envoyer" aria-label="Envoyer">
+          <span class="envoyer-texte" id="envoyer-texte">Envoyer</span>
+          <svg class="envoyer-icone" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+        <input type="file" id="selecteur" multiple hidden>
+      </form>
+      <p class="etat-liaison" id="etat-liaison" hidden>Liaison en direct interrompue : les nouveaux messages arrivent avec un léger retard.</p>
+    </div>
+  </footer>
+</div>
+
+<div class="avis" id="avis" role="status" hidden></div>
+<div class="depot" id="depot" hidden>Dépose pour joindre au fil</div>
+
+<script>/*__SUPABASE_UMD__*/</script>
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Configuration ----------
+  var SUPABASE_URL = "https://eonjswzamgpzszaidfxu.supabase.co";
+  var SUPABASE_KEY = "sb_publishable_AaZdftm6AjAbgfcDqVb-Gg_PhVIjQfv";
+  var URL_INSCRIPTION = SUPABASE_URL + "/functions/v1/inscription";
+  var URL_ASSISTANT = SUPABASE_URL + "/functions/v1/assistant";
+  var URL_CORRECTEUR = "https://api.languagetool.org/v2/check";
+  var SEAU = "fichiers";
+  var PAGE = 100;
+  var TAILLE_MAX = 20 * 1024 * 1024;
+  var REACTIONS_RAPIDES = ["👍", "❤️", "😂", "😮", "🙏", "✅"];
+
+  // ---------- Mémoire locale : garde la session d'une ouverture à l'autre ----------
+  // Deux emplacements (stockage du navigateur et base locale) pour rester connecté
+  // même quand l'un des deux n'est pas conservé.
+  var memoire = (function () {
+    var vive = {};
+    var base = null;
+    function ouvrir() {
+      if (base) return base;
+      base = new Promise(function (ok) {
+        try {
+          var r = indexedDB.open("le-fil", 1);
+          r.onupgradeneeded = function () { r.result.createObjectStore("kv"); };
+          r.onsuccess = function () { ok(r.result); };
+          r.onerror = function () { ok(null); };
+          r.onblocked = function () { ok(null); };
+        } catch (e) { ok(null); }
+      });
+      return base;
+    }
+    function operation(mode, action) {
+      return ouvrir().then(function (db) {
+        if (!db) return null;
+        return new Promise(function (ok) {
+          try {
+            var q = action(db.transaction("kv", mode).objectStore("kv"));
+            q.onsuccess = function () { ok(q.result == null ? null : q.result); };
+            q.onerror = function () { ok(null); };
+          } catch (e) { ok(null); }
+        });
+      });
+    }
+    return {
+      getItem: async function (cle) {
+        var v = null;
+        try { v = window.localStorage.getItem(cle); } catch (e) {}
+        if (v == null) v = await operation("readonly", function (s) { return s.get(cle); });
+        if (v == null && Object.prototype.hasOwnProperty.call(vive, cle)) v = vive[cle];
+        return v == null ? null : v;
+      },
+      setItem: async function (cle, valeur) {
+        vive[cle] = valeur;
+        try { window.localStorage.setItem(cle, valeur); } catch (e) {}
+        await operation("readwrite", function (s) { return s.put(valeur, cle); });
+      },
+      removeItem: async function (cle) {
+        delete vive[cle];
+        try { window.localStorage.removeItem(cle); } catch (e) {}
+        await operation("readwrite", function (s) { return s.delete(cle); });
+      }
+    };
+  })();
+
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storage: memoire }
+  });
+
+  var etat = {
+    moi: null,              // identifiant de mon compte
+    membres: new Map(),     // identifiant -> prénom
+    messages: new Map(),    // identifiant -> message
+    reactions: new Map(),   // identifiant de message -> [{user_id, emoji}]
+    lectures: new Map(),    // identifiant de membre -> dernier message vu
+    taches: [],
+    ilEnReste: false,       // des messages plus anciens existent
+    enAttente: [],          // fichiers choisis, pas encore envoyés
+    autreEnLigne: false,
+    enDirect: false,
+    nonLus: 0,
+    notifs: true,           // son et notifications à l'arrivée d'un message
+    son: "carillon",        // son choisi
+    pushActif: false,       // cet appareil reçoit les notifications appli fermée
+    canal: null,
+    minuterie: null,
+    mode: "connexion",
+    envoiEnCours: false,
+    volet: "calc",
+    reformulation: false    // l'aide à la reformulation est-elle configurée côté serveur ?
+  };
+
+  function $(id) { return document.getElementById(id); }
+  function el(balise, classe, texte) {
+    var n = document.createElement(balise);
+    if (classe) n.className = classe;
+    if (texte != null) n.textContent = texte;
+    return n;
+  }
+
+  var VUES = ["chargement", "accueil", "exclu", "fil"];
+  function montrer(vue) {
+    VUES.forEach(function (v) { $("vue-" + v).hidden = v !== vue; });
+  }
+
+  function delai(promesse, ms) {
+    return Promise.race([
+      promesse,
+      new Promise(function (_, rejet) { setTimeout(function () { rejet(new Error("delai")); }, ms); })
+    ]);
+  }
+
+  var minuterieAvis = null;
+  function avis(texte) {
+    var a = $("avis");
+    a.textContent = texte;
+    a.hidden = false;
+    clearTimeout(minuterieAvis);
+    minuterieAvis = setTimeout(function () { a.hidden = true; }, 5500);
+  }
+
+  // ---------- Démarrage ----------
+  async function demarrer() {
+    montrer("chargement");
+    $("chargement-texte").textContent = "Ouverture…";
+    $("chargement-reessayer").hidden = true;
+    try {
+      var reglage = await memoire.getItem("fil-notifs");
+      etat.notifs = reglage !== "0";
+      etat.son = (await memoire.getItem("fil-son")) || "carillon";
+      if (!SONS[etat.son]) etat.son = "carillon";
+      afficherCloche();
+      var r = await delai(sb.auth.getSession(), 12000);
+      var session = r.data && r.data.session;
+      if (session) await entrer(session.user);
+      else await ouvrirAccueil();
+    } catch (e) {
+      $("chargement-texte").textContent = "Connexion au fil impossible. Vérifie ta connexion internet.";
+      $("chargement-reessayer").hidden = false;
+    }
+  }
+  $("chargement-reessayer").addEventListener("click", demarrer);
+
+  // ---------- Accueil ----------
+  async function ouvrirAccueil() {
+    montrer("accueil");
+    choisirMode("connexion");
+    $("accueil-note").hidden = true;
+    $("onglets").hidden = false;
+    try {
+      var dernier = await memoire.getItem("fil-email");
+      if (dernier && !$("email").value) $("email").value = dernier;
+    } catch (e) {}
+    try {
+      var rep = await delai(fetch(URL_INSCRIPTION), 10000);
+      var infos = await rep.json();
+      if (infos && infos.complet) {
+        $("onglets").hidden = true;
+        choisirMode("connexion");
+        $("accueil-note").textContent = "Le fil a déjà ses deux membres : la création de compte est fermée.";
+        $("accueil-note").hidden = false;
+      }
+    } catch (e) { /* sans réponse, on laisse les deux onglets */ }
+  }
+
+  function choisirMode(mode) {
+    etat.mode = mode;
+    var creation = mode === "creation";
+    $("onglet-connexion").setAttribute("aria-selected", String(!creation));
+    $("onglet-creation").setAttribute("aria-selected", String(creation));
+    $("champ-prenom").hidden = !creation;
+    $("aide-motdepasse").hidden = !creation;
+    $("motdepasse").autocomplete = creation ? "new-password" : "current-password";
+    $("accueil-valider").textContent = creation ? "Créer mon compte" : "Se connecter";
+    erreurAccueil("");
+  }
+  $("onglet-connexion").addEventListener("click", function () { choisirMode("connexion"); });
+  $("onglet-creation").addEventListener("click", function () { choisirMode("creation"); });
+
+  function erreurAccueil(texte) {
+    $("accueil-erreur").textContent = texte;
+    $("accueil-erreur").hidden = !texte;
+  }
+
+  var ERREURS_INSCRIPTION = {
+    email: "Cette adresse e-mail n'est pas valide.",
+    mot_de_passe: "Le mot de passe doit compter entre 8 et 72 caractères.",
+    prenom: "Indique ton prénom.",
+    complet: "Le fil a déjà ses deux membres : la création de compte est fermée.",
+    existe: "Un compte existe déjà avec cette adresse. Passe par « Se connecter »."
+  };
+
+  $("formulaire").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    var email = $("email").value.trim();
+    var motdepasse = $("motdepasse").value;
+    var prenom = $("prenom").value.trim();
+    erreurAccueil("");
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return erreurAccueil(ERREURS_INSCRIPTION.email);
+    if (etat.mode === "creation") {
+      if (!prenom) return erreurAccueil(ERREURS_INSCRIPTION.prenom);
+      if (motdepasse.length < 8 || motdepasse.length > 72) return erreurAccueil(ERREURS_INSCRIPTION.mot_de_passe);
+    } else if (!motdepasse) {
+      return erreurAccueil("Saisis ton mot de passe.");
+    }
+
+    var bouton = $("accueil-valider");
+    bouton.disabled = true;
+    bouton.textContent = etat.mode === "creation" ? "Création…" : "Connexion…";
+    try {
+      if (etat.mode === "creation") {
+        var rep = await delai(fetch(URL_INSCRIPTION, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email, password: motdepasse, display_name: prenom })
+        }), 20000);
+        var corps = {};
+        try { corps = await rep.json(); } catch (e) { /* réponse vide */ }
+        if (!rep.ok) {
+          var texte = ERREURS_INSCRIPTION[corps.code] || "La création du compte a échoué. Réessaie dans un instant.";
+          if (!ERREURS_INSCRIPTION[corps.code] && corps.detail) texte += " (" + corps.detail + ")";
+          return erreurAccueil(texte);
+        }
+      }
+      var r = await delai(sb.auth.signInWithPassword({ email: email, password: motdepasse }), 20000);
+      if (r.error) {
+        var code = r.error.code || "";
+        if (code === "invalid_credentials" || r.error.status === 400) return erreurAccueil("E-mail ou mot de passe incorrect.");
+        if (code === "email_not_confirmed") return erreurAccueil("Ce compte n'est pas encore confirmé.");
+        return erreurAccueil("Connexion impossible. Vérifie ta connexion internet et réessaie.");
+      }
+      $("motdepasse").value = "";
+      memoire.setItem("fil-email", email);
+      await entrer(r.data.user);
+    } catch (e) {
+      erreurAccueil("Connexion impossible. Vérifie ta connexion internet et réessaie.");
+    } finally {
+      bouton.disabled = false;
+      bouton.textContent = etat.mode === "creation" ? "Créer mon compte" : "Se connecter";
+    }
+  });
+
+  // ---------- Entrée dans le fil ----------
+  async function chargerMembres() {
+    var r = await sb.from("members").select("user_id, display_name, joined_at").order("joined_at");
+    if (r.error) throw r.error;
+    etat.membres = new Map(r.data.map(function (m) { return [m.user_id, m.display_name]; }));
+  }
+  function idAutre() {
+    var autre = null;
+    etat.membres.forEach(function (nom, id) { if (id !== etat.moi) autre = id; });
+    return autre;
+  }
+
+  async function entrer(utilisateur) {
+    etat.moi = utilisateur.id;
+    await delai(chargerMembres(), 12000);
+    if (!etat.membres.has(etat.moi)) { montrer("exclu"); return; }
+    await delai(synchroniser(true), 12000);
+    try { await delai(chargerDecor(), 8000); } catch (e) {}
+    try { await delai(importerMotsOrigine().then(chargerMotsMagiques), 15000); } catch (e) {}
+    montrer("fil");
+    afficherEntete();
+    afficherMessages("bas");
+    abonner();
+    chargerTaches();
+    proposerNotifications();
+    clearInterval(etat.minuterie);
+    etat.minuterie = setInterval(function () {
+      if (!etat.enDirect && document.visibilityState === "visible") synchroniser().catch(function () {});
+    }, 20000);
+    if (!ouvrirRedactionDemandee()) $("texte").focus();
+  }
+
+  async function quitter() {
+    clearInterval(etat.minuterie);
+    await desactiverPush();
+    fermerRedaction();
+    fermerReglages();
+    magie.liste = []; magie.urls = {};
+    if (etat.canal) { try { await sb.removeChannel(etat.canal); } catch (e) {} etat.canal = null; }
+    try { await sb.auth.signOut({ scope: "local" }); } catch (e) {}
+    etat.moi = null;
+    etat.membres.clear(); etat.messages.clear(); etat.reactions.clear(); etat.lectures.clear();
+    etat.taches = []; etat.enAttente = []; etat.nonLus = 0;
+    majTitre(); afficherEnAttente(); fermerPanneau();
+    await ouvrirAccueil();
+  }
+  $("deconnexion").addEventListener("click", quitter);
+  $("exclu-deconnexion").addEventListener("click", quitter);
+
+  // ---------- Messages : chargement ----------
+  function plusAncienId() {
+    var ids = Array.from(etat.messages.keys());
+    return ids.length ? Math.min.apply(null, ids) : null;
+  }
+  function plusRecentId() {
+    var ids = Array.from(etat.messages.keys());
+    return ids.length ? Math.max.apply(null, ids) : 0;
+  }
+
+  async function chargerAnnexes() {
+    var depuis = plusAncienId();
+    var lectures = await sb.from("reads").select("user_id, last_read_id");
+    if (!lectures.error) {
+      etat.lectures = new Map(lectures.data.map(function (l) { return [l.user_id, l.last_read_id]; }));
+    }
+    if (depuis == null) { etat.reactions.clear(); return; }
+    var r = await sb.from("reactions").select("message_id, user_id, emoji").gte("message_id", depuis);
+    if (r.error) return;
+    var carte = new Map();
+    r.data.forEach(function (x) {
+      if (!carte.has(x.message_id)) carte.set(x.message_id, []);
+      carte.get(x.message_id).push({ user_id: x.user_id, emoji: x.emoji });
+    });
+    etat.reactions = carte;
+  }
+
+  // Recharge les messages les plus récents et réconcilie avec ce qui est affiché.
+  async function synchroniser(premier) {
+    var r = await sb.from("messages").select("*").order("id", { ascending: false }).limit(PAGE);
+    if (r.error) throw r.error;
+    var recus = r.data;
+    if (premier) {
+      etat.messages.clear();
+      etat.ilEnReste = recus.length === PAGE;
+    }
+    var avant = empreinte();
+    var nouveaux = [];
+    if (recus.length) {
+      var plusAncien = recus[recus.length - 1].id;
+      var idsRecus = new Set(recus.map(function (m) { return m.id; }));
+      etat.messages.forEach(function (m, id) {
+        if (id >= plusAncien && !idsRecus.has(id)) etat.messages.delete(id);
+      });
+      recus.forEach(function (m) {
+        if (!premier && !etat.messages.has(m.id)) nouveaux.push(m);
+        etat.messages.set(m.id, m);
+      });
+    } else if (!etat.ilEnReste) {
+      etat.messages.clear();
+    }
+    await chargerAnnexes();
+    if (!premier) {
+      if (empreinte() !== avant) afficherMessages("auto");
+      nouveaux.sort(function (a, b) { return a.id - b.id; }).forEach(function (m) {
+        signalerArrivee(m);
+        if (m.sender !== etat.moi && m.body) jouerMagie(m.body);
+      });
+    }
+  }
+  // Résumé de ce qui est affiché, pour ne redessiner que si quelque chose a changé
+  function empreinte() {
+    var r = [];
+    etat.reactions.forEach(function (liste, id) { r.push(id + ":" + liste.map(function (x) { return x.user_id + x.emoji; }).sort().join("")); });
+    var l = [];
+    etat.lectures.forEach(function (v, k) { l.push(k + "=" + v); });
+    return Array.from(etat.messages.keys()).sort(function (a, b) { return a - b; }).join(",") + "|" + r.sort().join(";") + "|" + l.sort().join(";");
+  }
+
+  async function chargerPlusAnciens() {
+    var plusAncien = plusAncienId();
+    if (plusAncien == null) return;
+    var r = await sb.from("messages").select("*").lt("id", plusAncien).order("id", { ascending: false }).limit(PAGE);
+    if (r.error) { avis("Chargement des anciens messages impossible."); return; }
+    etat.ilEnReste = r.data.length === PAGE;
+    r.data.forEach(function (m) { etat.messages.set(m.id, m); });
+    await chargerAnnexes();
+    afficherMessages("garder");
+  }
+
+  // ---------- Messages : affichage ----------
+  var fmtHeure = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  var fmtJour = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  var fmtJourAn = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+
+  function cleJour(d) { return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate(); }
+  function libelleJour(d) {
+    var auj = new Date();
+    var hier = new Date(); hier.setDate(auj.getDate() - 1);
+    if (cleJour(d) === cleJour(auj)) return "Aujourd'hui";
+    if (cleJour(d) === cleJour(hier)) return "Hier";
+    var t = d.getFullYear() === auj.getFullYear() ? fmtJour.format(d) : fmtJourAn.format(d);
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+  function poids(octets) {
+    if (octets == null) return "";
+    if (octets < 1024) return octets + " o";
+    if (octets < 1024 * 1024) return Math.round(octets / 1024) + " Ko";
+    return (octets / (1024 * 1024)).toFixed(1).replace(".", ",") + " Mo";
+  }
+  function extension(nom) {
+    var m = /\.([A-Za-z0-9]{1,5})$/.exec(nom || "");
+    return m ? m[1].toLowerCase() : "";
+  }
+  // Un message fait seulement d'un à trois émojis s'affiche en grand
+  function seulementEmojis(texte) {
+    var t = (texte || "").trim();
+    if (!t || t.length > 24) return false;
+    try { return /^(?:\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic}|[\u{1F3FB}-\u{1F3FF}])*\s*){1,3}$/u.test(t); }
+    catch (e) { return false; }
+  }
+
+  // Transforme les adresses web d'un texte en liens, sans jamais interpréter de HTML.
+  function remplirTexte(noeud, texte) {
+    var motif = /https?:\/\/[^\s<>"']+/g;
+    var dernier = 0, m;
+    while ((m = motif.exec(texte)) !== null) {
+      var adresse = m[0].replace(/[.,;:!?)\]]+$/, "");
+      if (m.index > dernier) noeud.appendChild(document.createTextNode(texte.slice(dernier, m.index)));
+      var a = el("a", null, adresse);
+      a.href = adresse; a.target = "_blank"; a.rel = "noopener noreferrer";
+      noeud.appendChild(a);
+      dernier = m.index + adresse.length;
+      motif.lastIndex = dernier;
+    }
+    if (dernier < texte.length) noeud.appendChild(document.createTextNode(texte.slice(dernier)));
+  }
+
+  function construireMessage(m, dernierVu) {
+    var aMoi = m.sender === etat.moi;
+    var ligne = el("div", "ligne " + (aMoi ? "moi" : "autre"));
+    ligne.dataset.id = m.id;
+    ligne.appendChild(el("span", "noeud"));
+    var contenu = el("div", "contenu");
+    var bulle = el("div", "bulle");
+
+    if (m.file_path) {
+      var fichier = el("div", "fichier");
+      fichier.appendChild(el("div", "fichier-type", (extension(m.file_name) || "doc").slice(0, 4)));
+      var infos = el("div");
+      infos.appendChild(el("div", "fichier-nom", m.file_name || "Fichier"));
+      infos.appendChild(el("div", "fichier-poids", poids(m.file_size)));
+      fichier.appendChild(infos);
+      var actions = el("div", "fichier-actions");
+      var visible = /^(application\/pdf|image\/(png|jpeg|gif|webp))$/.test(m.file_type || "");
+      if (visible) {
+        var bOuvrir = el("button", null, "Ouvrir");
+        bOuvrir.type = "button";
+        bOuvrir.addEventListener("click", function () { ouvrirFichier(m, false); });
+        actions.appendChild(bOuvrir);
+      }
+      var bTel = el("button", null, "Télécharger");
+      bTel.type = "button";
+      bTel.addEventListener("click", function () { ouvrirFichier(m, true); });
+      actions.appendChild(bTel);
+      fichier.appendChild(actions);
+      bulle.appendChild(fichier);
+      if (m.body) { var leg = el("div", "legende"); remplirTexte(leg, m.body); bulle.appendChild(leg); }
+    } else if (imageDuMessage(m.body)) {
+      var nomImage = imageDuMessage(m.body);
+      bulle.classList.add("image-emoji");
+      var illustration = el("img");
+      if (IMAGES_EMOJIS[nomImage]) illustration.src = IMAGES_EMOJIS[nomImage];
+      illustration.alt = NOMS_IMAGES[nomImage] || "Image";
+      bulle.appendChild(illustration);
+    } else {
+      if (seulementEmojis(m.body)) bulle.classList.add("grand");
+      remplirTexte(bulle, m.body || "");
+    }
+    contenu.appendChild(bulle);
+
+    // Réactions déjà posées
+    var posees = etat.reactions.get(m.id) || [];
+    if (posees.length) {
+      var groupes = new Map();
+      posees.forEach(function (x) {
+        if (!groupes.has(x.emoji)) groupes.set(x.emoji, []);
+        groupes.get(x.emoji).push(x.user_id);
+      });
+      var zone = el("div", "reactions");
+      groupes.forEach(function (qui, emoji) {
+        var mien = qui.indexOf(etat.moi) !== -1;
+        var b = el("button", "reaction", emoji + " " + qui.length);
+        b.type = "button";
+        b.setAttribute("aria-pressed", String(mien));
+        b.title = qui.map(function (id) { return id === etat.moi ? "Toi" : (etat.membres.get(id) || "…"); }).join(", ");
+        b.addEventListener("click", function () { basculerReaction(m.id, emoji); });
+        zone.appendChild(b);
+      });
+      contenu.appendChild(zone);
+    }
+
+    var meta = el("div", "meta");
+    var qui = aMoi ? "Toi" : (etat.membres.get(m.sender) || "…");
+    meta.appendChild(el("span", null, qui + ", " + fmtHeure.format(new Date(m.created_at))));
+    if (aMoi && m.id === dernierVu) meta.appendChild(el("span", "vu", "Vu"));
+
+    var bReagir = el("button", "bouton-discret", "Réagir");
+    bReagir.type = "button";
+    bReagir.addEventListener("click", function () {
+      var choix = el("span", "choix-reaction");
+      REACTIONS_RAPIDES.forEach(function (emoji) {
+        var b = el("button", null, emoji);
+        b.type = "button";
+        b.setAttribute("aria-label", "Réagir avec " + emoji);
+        b.addEventListener("click", function () { basculerReaction(m.id, emoji); });
+        choix.appendChild(b);
+      });
+      bReagir.replaceWith(choix);
+      choix.firstChild.focus();
+    });
+    meta.appendChild(bReagir);
+
+    if (aMoi) {
+      var bSuppr = el("button", "bouton-discret", "Supprimer");
+      bSuppr.type = "button";
+      var arme = null;
+      bSuppr.addEventListener("click", function () {
+        if (arme) { clearTimeout(arme); supprimerMessage(m); return; }
+        bSuppr.textContent = "Confirmer la suppression";
+        bSuppr.classList.add("confirmer");
+        arme = setTimeout(function () {
+          arme = null; bSuppr.textContent = "Supprimer"; bSuppr.classList.remove("confirmer");
+        }, 4000);
+      });
+      meta.appendChild(bSuppr);
+    }
+    contenu.appendChild(meta);
+    ligne.appendChild(contenu);
+    return ligne;
+  }
+
+  // defilement : "bas" (aller en bas), "auto" (en bas si on y était), "garder" (ne pas bouger)
+  function afficherMessages(defilement) {
+    var flux = $("flux"), piste = $("piste");
+    var etaitEnBas = flux.scrollHeight - flux.scrollTop - flux.clientHeight < 80;
+    var hauteurAvant = flux.scrollHeight, positionAvant = flux.scrollTop;
+    var liste = Array.from(etat.messages.values()).sort(function (a, b) { return a.id - b.id; });
+    var fragment = document.createDocumentFragment();
+
+    // Mon dernier message que l'autre a vu
+    var autre = idAutre();
+    var luParAutre = autre ? (etat.lectures.get(autre) || 0) : 0;
+    var dernierVu = null;
+    liste.forEach(function (m) { if (m.sender === etat.moi && m.id <= luParAutre) dernierVu = m.id; });
+
+    if (etat.ilEnReste && liste.length) {
+      var zone = el("div", "plus-anciens");
+      var b = el("button", "bouton-discret", "Afficher les messages plus anciens");
+      b.type = "button";
+      b.addEventListener("click", function () { b.disabled = true; chargerPlusAnciens(); });
+      zone.appendChild(b);
+      fragment.appendChild(zone);
+    }
+
+    if (!liste.length) {
+      var vide = el("div", "vide");
+      if (etat.membres.size < 2) {
+        vide.appendChild(el("strong", null, "Tu es seul sur le fil pour l'instant"));
+        vide.appendChild(document.createTextNode("Envoie ce fichier à l'autre personne. Elle l'ouvre, crée son compte, et le fil se ferme à deux."));
+      } else {
+        vide.appendChild(el("strong", null, "Le fil est ouvert"));
+        vide.appendChild(document.createTextNode("Écris le premier message, colle un lien ou glisse un fichier ici."));
+      }
+      fragment.appendChild(vide);
+    }
+
+    var jourCourant = null;
+    liste.forEach(function (m) {
+      var d = new Date(m.created_at);
+      if (cleJour(d) !== jourCourant) {
+        jourCourant = cleJour(d);
+        fragment.appendChild(el("div", "jour", libelleJour(d)));
+      }
+      fragment.appendChild(construireMessage(m, dernierVu));
+    });
+
+    piste.replaceChildren(fragment);
+    if (defilement === "bas" || (defilement === "auto" && etaitEnBas)) flux.scrollTop = flux.scrollHeight;
+    else if (defilement === "garder") flux.scrollTop = positionAvant + (flux.scrollHeight - hauteurAvant);
+    else flux.scrollTop = positionAvant;
+    marquerLu();
+  }
+
+  function afficherEntete() {
+    var noms = Array.from(etat.membres.values());
+    $("entete-noms").textContent = noms.join(" et ");
+    var autre = idAutre();
+    var nom = autre ? etat.membres.get(autre) : null;
+    var p = $("presence"), t = $("presence-texte");
+    if (!nom) { p.dataset.etat = "absent"; t.textContent = "En attente de l'autre personne"; }
+    else if (etat.autreEnLigne) { p.dataset.etat = "en-ligne"; t.textContent = nom + " est en ligne"; }
+    else { p.dataset.etat = "absent"; t.textContent = nom + " est hors ligne"; }
+    p.title = t.textContent;
+  }
+
+  // ---------- « Vu » ----------
+  function present() {
+    return !$("vue-fil").hidden && document.visibilityState === "visible" && document.hasFocus();
+  }
+  var lectureEnCours = false;
+  async function marquerLu() {
+    if (!etat.moi || lectureEnCours || !present()) return;
+    var dernier = plusRecentId();
+    if (!dernier || dernier <= (etat.lectures.get(etat.moi) || 0)) return;
+    lectureEnCours = true;
+    try {
+      var maintenant = new Date().toISOString();
+      var r = await sb.from("reads").update({ last_read_id: dernier, updated_at: maintenant }).eq("user_id", etat.moi).select("user_id");
+      if (!r.error && r.data && !r.data.length) r = await sb.from("reads").insert({ last_read_id: dernier });
+      if (!r.error) etat.lectures.set(etat.moi, dernier);
+    } catch (e) { /* on réessaiera au prochain passage */ }
+    lectureEnCours = false;
+    if (present() && plusRecentId() > (etat.lectures.get(etat.moi) || 0)) marquerLu();
+  }
+
+  // ---------- Notifications ----------
+  var ICONE_NORMALE = $("icone").href;
+  var ICONE_ALERTE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23D62839'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23fff'/%3E%3C/svg%3E";
+  function majTitre() {
+    document.title = (etat.nonLus > 0 ? "(" + etat.nonLus + ") " : "") + "Le fil";
+    $("icone").href = etat.nonLus > 0 ? ICONE_ALERTE : ICONE_NORMALE;
+  }
+  function retourAuFil() {
+    if (etat.nonLus) { etat.nonLus = 0; majTitre(); }
+    if (etat.moi && !$("vue-fil").hidden) { marquerLu(); }
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") {
+      retourAuFil();
+      if (etat.moi && !$("vue-fil").hidden) {
+        synchroniser().catch(function () {});
+        if (Date.now() - magie.urlsDate > 12 * 3600 * 1000) chargerMotsMagiques();
+      }
+    }
+  });
+  window.addEventListener("focus", retourAuFil);
+
+  var son = null;
+  function preparerSon() {
+    try {
+      if (!son) { var C = window.AudioContext || window.webkitAudioContext; if (C) son = new C(); }
+      if (son && son.state === "suspended") son.resume();
+    } catch (e) {}
+  }
+  document.addEventListener("pointerdown", preparerSon);
+  document.addEventListener("keydown", preparerSon);
+  // Sons de notification, fabriqués par le navigateur (aucun fichier à charger)
+  var SONS = {
+    carillon: [[880, 0, 0.38, "sine"], [1174.66, 0.13, 0.42, "sine"]],
+    bulle: [[520, 0, 0.12, "sine", 980], [760, 0.1, 0.14, "sine", 1300]],
+    cloche: [[1568, 0, 0.9, "sine"], [2349, 0, 0.6, "sine", null, 0.35], [3136, 0, 0.4, "sine", null, 0.2]],
+    pop: [[420, 0, 0.09, "triangle", 160]],
+    arpege: [[659.25, 0, 0.22, "sine"], [783.99, 0.09, 0.22, "sine"], [987.77, 0.18, 0.22, "sine"], [1318.5, 0.27, 0.4, "sine"]],
+    aucun: []
+  };
+  function tinter(nom) {
+    var notes = SONS[nom || etat.son] || SONS.carillon;
+    if (!son || son.state !== "running" || !notes.length) return;
+    var t = son.currentTime;
+    notes.forEach(function (n) {
+      var o = son.createOscillator(), g = son.createGain();
+      o.type = n[3]; o.frequency.setValueAtTime(n[0], t + n[1]);
+      if (n[4]) o.frequency.exponentialRampToValueAtTime(n[4], t + n[1] + n[2]);
+      var volume = 0.16 * (n[5] || 1);
+      g.gain.setValueAtTime(0.0001, t + n[1]);
+      g.gain.exponentialRampToValueAtTime(volume, t + n[1] + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + n[1] + n[2]);
+      o.connect(g); g.connect(son.destination);
+      o.start(t + n[1]); o.stop(t + n[1] + n[2] + 0.05);
+    });
+  }
+  function notifsSysteme() { return "Notification" in window ? Notification.permission : "absent"; }
+
+  function signalerArrivee(m) {
+    if (!m || m.sender === etat.moi || present()) return;
+    etat.nonLus += 1; majTitre();
+    if (!etat.notifs) return;
+    tinter();
+    // Si cet appareil reçoit déjà les notifications du serveur, on n'en crée pas une deuxième
+    if (etat.pushActif || notifsSysteme() !== "granted") return;
+    try {
+      var nomImg = imageDuMessage(m.body);
+      var corps = m.file_path ? "Fichier : " + (m.file_name || "") : nomImg ? "Image : " + (NOMS_IMAGES[nomImg] || "") : (m.body || "").slice(0, 160);
+      var n = new Notification(etat.membres.get(m.sender) || "Le fil", { body: corps, tag: "le-fil" });
+      n.onclick = function () { window.focus(); n.close(); };
+    } catch (e) {}
+  }
+
+  // ----- Notifications même appli fermée (service worker + serveur) -----
+  var URL_NOTIFIER = SUPABASE_URL + "/functions/v1/notifier";
+  var swPret = null;
+  function pushPossible() {
+    return window.isSecureContext && /^https?:$/.test(location.protocol) && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  }
+  function surIphone() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); }
+  function installee() { return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true; }
+  if (window.isSecureContext && /^https?:$/.test(location.protocol) && "serviceWorker" in navigator) {
+    swPret = navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(function (reg) {
+      // Vérifie s'il existe une nouvelle version à chaque retour sur l'appli
+      document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") reg.update().catch(function () {}); });
+      return navigator.serviceWorker.ready;
+    }).catch(function () { return null; });
+    // Une nouvelle version vient de s'installer : on recharge une seule fois, si aucun message n'est en cours d'écriture
+    var dejaRecharge = false;
+    navigator.serviceWorker.addEventListener("controllerchange", function () {
+      if (dejaRecharge) return;
+      var brouillon = ($("texte") && $("texte").value.trim()) || ($("redac-texte") && $("redac-texte").value.trim());
+      if (brouillon) { avis("Une nouvelle version du fil est prête : elle s'appliquera à la prochaine ouverture."); return; }
+      dejaRecharge = true;
+      location.reload();
+    });
+  }
+  function base64VersOctets(b64) {
+    var s = (b64 + "===".slice((b64.length + 3) % 4)).replace(/-/g, "+").replace(/_/g, "/");
+    var bin = atob(s), o = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) o[i] = bin.charCodeAt(i);
+    return o;
+  }
+  async function etatPush() {
+    if (!pushPossible() || !swPret) return null;
+    var reg = await swPret;
+    if (!reg) return null;
+    return reg.pushManager.getSubscription();
+  }
+  async function activerPush() {
+    if (!pushPossible()) return { ok: false, raison: surIphone() && !installee() ? "iphone" : "navigateur" };
+    var p = await demanderPermission();
+    if (p !== "granted") return { ok: false, raison: "refus" };
+    try {
+      var reg = await swPret;
+      if (!reg) return { ok: false, raison: "navigateur" };
+      var abonnement = await reg.pushManager.getSubscription();
+      if (!abonnement) {
+        var rep = await delai(fetch(URL_NOTIFIER), 10000);
+        var infos = await rep.json();
+        abonnement = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: base64VersOctets(infos.cle) });
+      }
+      var j = abonnement.toJSON();
+      var r = await sb.from("push_subscriptions").upsert({ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, user_id: etat.moi }, { onConflict: "endpoint" });
+      if (r.error) return { ok: false, raison: "serveur" };
+      etat.pushActif = true;
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, raison: "navigateur" };
+    }
+  }
+  async function desactiverPush() {
+    try {
+      var a = await etatPush();
+      if (a) {
+        await sb.from("push_subscriptions").delete().eq("endpoint", a.endpoint);
+        await a.unsubscribe();
+      }
+    } catch (e) {}
+    etat.pushActif = false;
+  }
+  async function verifierPush() {
+    var a = null;
+    try { a = await etatPush(); } catch (e) {}
+    etat.pushActif = Boolean(a) && notifsSysteme() === "granted";
+    // Garde l'abonnement à jour côté serveur (il peut changer ou avoir été nettoyé)
+    if (etat.pushActif && etat.notifs) activerPush();
+    afficherMenuNotifs();
+  }
+
+  function afficherCloche() {
+    var c = $("cloche");
+    c.setAttribute("aria-pressed", String(etat.notifs));
+    c.title = etat.notifs ? "Notifications et son" : "Notifications coupées";
+    $("notifs-actives").checked = etat.notifs;
+    $("notifs-son").value = etat.son;
+  }
+  function afficherMenuNotifs() {
+    var zone = $("notifs-appareil");
+    zone.replaceChildren();
+    if (!etat.notifs) { zone.appendChild(document.createTextNode("Notifications coupées : seul le compteur dans l'onglet reste.")); return; }
+    if (etat.pushActif) {
+      zone.appendChild(el("strong", null, "Appli fermée : activées sur cet appareil."));
+      zone.appendChild(document.createTextNode(" Tu es prévenu même quand Le fil est fermé."));
+      return;
+    }
+    if (pushPossible()) {
+      zone.appendChild(document.createTextNode("Pour être prévenu même quand Le fil est fermé :"));
+      zone.appendChild(el("br"));
+      var b = el("button", "bouton-second", "Activer sur cet appareil");
+      b.type = "button";
+      b.addEventListener("click", async function () {
+        b.disabled = true;
+        var r = await activerPush();
+        afficherMenuNotifs();
+        if (!r.ok) avis(messagePush(r.raison));
+        else avis("Notifications activées sur cet appareil, même appli fermée.");
+      });
+      zone.appendChild(b);
+      return;
+    }
+    zone.appendChild(document.createTextNode(surIphone() && !installee()
+      ? "Sur iPhone : ouvre Le fil dans Safari, touche Partager puis « Sur l'écran d'accueil ». Ouvre-le depuis l'écran d'accueil et active les notifications ici."
+      : "Ce navigateur ne permet pas les notifications appli fermée. Le son et le compteur fonctionnent quand Le fil est ouvert."));
+  }
+  function messagePush(raison) {
+    if (raison === "refus") return "Les notifications sont bloquées pour Le fil dans les réglages du navigateur ou du téléphone.";
+    if (raison === "iphone") return "Sur iPhone, ajoute d'abord Le fil à l'écran d'accueil (Partager, puis « Sur l'écran d'accueil »).";
+    if (raison === "serveur") return "L'appareil n'a pas pu être enregistré. Réessaie dans un instant.";
+    return "Ce navigateur ne permet pas les notifications appli fermée.";
+  }
+  async function demanderPermission() {
+    if (notifsSysteme() !== "default") return notifsSysteme();
+    try { return await Notification.requestPermission(); } catch (e) { return "denied"; }
+  }
+  function basculerMenuNotifs(ouvrir) {
+    var menu = $("menu-notifs");
+    if (ouvrir === undefined) ouvrir = menu.hidden;
+    menu.hidden = !ouvrir;
+    $("cloche").setAttribute("aria-expanded", String(ouvrir));
+    if (ouvrir) afficherMenuNotifs();
+  }
+  $("cloche").addEventListener("click", function (ev) { ev.stopPropagation(); preparerSon(); basculerMenuNotifs(); });
+  document.addEventListener("click", function (ev) {
+    if (!$("menu-notifs").hidden && !ev.target.closest(".cloche-zone")) basculerMenuNotifs(false);
+  });
+  $("notifs-actives").addEventListener("change", async function (ev) {
+    etat.notifs = ev.target.checked;
+    memoire.setItem("fil-notifs", etat.notifs ? "1" : "0");
+    afficherCloche();
+    $("invite-notif").hidden = true;
+    if (!etat.notifs) { await desactiverPush(); afficherMenuNotifs(); return; }
+    tinter();
+    if (pushPossible()) await activerPush(); else await demanderPermission();
+    afficherMenuNotifs();
+  });
+  $("notifs-son").addEventListener("change", function (ev) {
+    etat.son = ev.target.value;
+    memoire.setItem("fil-son", etat.son);
+    preparerSon(); tinter();
+  });
+  $("notifs-ecouter").addEventListener("click", function () { preparerSon(); tinter($("notifs-son").value); });
+
+  // Notifications activées par défaut : abonnement automatique si déjà autorisé,
+  // sinon demande d'autorisation au premier geste dans l'appli (les navigateurs l'exigent).
+  var gesteArme = false;
+  function armerPremierGeste() {
+    if (gesteArme) return;
+    gesteArme = true;
+    function auPremierGeste(ev) {
+      if (ev.target && ev.target.closest && ev.target.closest("#invite-non, #menu-notifs, #cloche")) return;
+      document.removeEventListener("click", auPremierGeste, true);
+      document.removeEventListener("keydown", auPremierGeste, true);
+      gesteArme = false;
+      if (!etat.notifs || etat.pushActif || notifsSysteme() !== "default") return;
+      var demande = pushPossible() ? activerPush() : demanderPermission().then(function (p) { return { ok: p === "granted" }; });
+      demande.then(function (r) {
+        $("invite-notif").hidden = true;
+        afficherMenuNotifs();
+        if (r && r.ok) avis(pushPossible() ? "Notifications activées sur cet appareil, même appli fermée." : "Notifications activées tant que Le fil est ouvert.");
+      });
+    }
+    document.addEventListener("click", auPremierGeste, true);
+    document.addEventListener("keydown", auPremierGeste, true);
+  }
+  async function proposerNotifications() {
+    await verifierPush();
+    $("invite-notif").hidden = true;
+    if (!etat.notifs || etat.pushActif) return;
+    // Déjà autorisé sur cet appareil : on s'abonne sans rien demander
+    if (pushPossible() && notifsSysteme() === "granted") {
+      await activerPush();
+      afficherMenuNotifs();
+      return;
+    }
+    // iPhone : il faut d'abord ajouter Le fil à l'écran d'accueil
+    if (surIphone() && !installee()) {
+      $("invite-texte").textContent = "Pour recevoir les notifications sur iPhone : touche Partager puis « Sur l'écran d'accueil », et ouvre Le fil depuis cette icône.";
+      $("invite-oui").hidden = true;
+      $("invite-non").textContent = "Plus tard";
+      $("invite-notif").hidden = (await memoire.getItem("fil-invite-iphone")) === "non";
+      return;
+    }
+    if (notifsSysteme() === "default") {
+      // L'autorisation sera demandée au premier clic dans l'appli ; le bandeau l'explique
+      $("invite-texte").textContent = "Les notifications sont activées par défaut : accepte la demande de ton navigateur pour les recevoir.";
+      $("invite-notif").hidden = false;
+      armerPremierGeste();
+    }
+  }
+  $("invite-oui").addEventListener("click", async function () {
+    $("invite-notif").hidden = true;
+    if (pushPossible()) {
+      var r = await activerPush();
+      if (r.ok) avis("Notifications activées, même quand Le fil est fermé.");
+      else { memoire.setItem("fil-invite-notif", "non"); avis(messagePush(r.raison)); }
+      return;
+    }
+    var p = await demanderPermission();
+    if (p === "granted") avis("Notifications activées tant que Le fil est ouvert.");
+    else {
+      memoire.setItem("fil-invite-notif", "non");
+      avis(surIphone() && !installee() ? messagePush("iphone") : "Ce navigateur n'autorise pas les notifications pour Le fil. Le son et le compteur dans l'onglet restent actifs.");
+    }
+  });
+  $("invite-non").addEventListener("click", function () {
+    $("invite-notif").hidden = true;
+    if (surIphone() && !installee()) memoire.setItem("fil-invite-iphone", "non");
+  });
+
+  // ---------- Mots magiques ----------
+  // Une expression dans un message fait passer une image géante derrière le fil.
+  // Les images sont intégrées au fichier au moment de l'assemblage.
+  var IMAGES_MAGIQUES = {};
+  // Les photos sont chiffrées dans la page publique ; la clé n'est lisible que par les deux membres.
+  var DECOR_CHIFFRE = /*__DECOR__*/{};
+  var decorCharge = false;
+  async function chargerDecor() {
+    if (decorCharge) return;
+    var r = await sb.from("decor_cle").select("cle").eq("id", 1).maybeSingle();
+    if (r.error || !r.data) return;
+    var cle = await crypto.subtle.importKey("raw", base64VersOctets(r.data.cle.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")), "AES-GCM", false, ["decrypt"]);
+    var travaux = [];
+    Object.keys(DECOR_CHIFFRE).forEach(function (sorte) {
+      Object.keys(DECOR_CHIFFRE[sorte]).forEach(function (nom) {
+        var e = DECOR_CHIFFRE[sorte][nom];
+        travaux.push(crypto.subtle.decrypt({ name: "AES-GCM", iv: base64VersOctets(e.iv) }, cle, base64VersOctets(e.d)).then(function (clair) {
+          var url = URL.createObjectURL(new Blob([clair], { type: "image/webp" }));
+          if (sorte === "magie") IMAGES_MAGIQUES[nom] = url; else IMAGES_EMOJIS[nom] = url;
+        }).catch(function () {}));
+      });
+    });
+    await Promise.all(travaux);
+    decorCharge = true;
+  }
+  // Mots d'origine : importés une seule fois dans la liste partagée, ensuite tout se gère dans Réglages
+  var MOTS_ORIGINE = [["y peu", "melon"], ["David", "david"], ["occupé", "occupe"], ["dégourdi", "dj"],
+    ["mail", "mail"], ["gregr", "gregr"], ["kiki", "kiki"], ["top", "top"]];
+  var magie = { liste: [], urls: {}, urlsDate: 0 };
+  function normaliser(texte) {
+    return " " + String(texte || "").toLowerCase().replace(/œ/g, "oe")
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9]+/g, " ").trim() + " ";
+  }
+  async function chargerMotsMagiques() {
+    var r = await sb.from("mots_magiques").select("id, mot, image_path, created_by, created_at").order("created_at");
+    if (r.error) return;
+    magie.liste = r.data;
+    // Liens d'affichage des images, valables un jour, renouvelés toutes les 12 heures
+    if (Date.now() - magie.urlsDate > 12 * 3600 * 1000) { magie.urls = {}; magie.urlsDate = Date.now(); }
+    var manquants = r.data.map(function (m) { return m.image_path; }).filter(function (c) { return !magie.urls[c]; });
+    if (manquants.length) {
+      var s = await sb.storage.from(SEAU).createSignedUrls(manquants, 86400);
+      if (!s.error && s.data) s.data.forEach(function (x) {
+        if (x.signedUrl && x.path) { magie.urls[x.path] = x.signedUrl; new Image().src = x.signedUrl; }
+      });
+    }
+    afficherMotsMagiques();
+  }
+  async function importerMotsOrigine() {
+    var deja = await sb.from("reglages").select("cle").eq("cle", "mots_origine_importes").maybeSingle();
+    if (deja.error || deja.data) return;
+    for (var i = 0; i < MOTS_ORIGINE.length; i++) {
+      var mot = MOTS_ORIGINE[i][0], nom = MOTS_ORIGINE[i][1];
+      if (!IMAGES_MAGIQUES[nom]) continue;
+      try {
+        var blob = await (await fetch(IMAGES_MAGIQUES[nom])).blob();
+        var chemin = etat.moi + "/magie/" + identifiantUnique() + ".webp";
+        var envoi = await sb.storage.from(SEAU).upload(chemin, blob, { contentType: "image/webp", upsert: false });
+        if (envoi.error) continue;
+        var ajout = await sb.from("mots_magiques").insert({ mot: mot, image_path: chemin });
+        if (ajout.error) await sb.storage.from(SEAU).remove([chemin]);
+      } catch (e) {}
+    }
+    await sb.from("reglages").insert({ cle: "mots_origine_importes" });
+  }
+  // Cherche le premier mot magique présent dans le texte (mot entier, accents, majuscules et pluriel ignorés)
+  function trouverMagie(texte) {
+    var t = normaliser(texte);
+    var trouve = null, position = Infinity;
+    magie.liste.forEach(function (m) {
+      var n = normaliser(m.mot).trim();
+      if (!n || !magie.urls[m.image_path]) return;
+      [n, n + "s", n + "e", n + "es", n + "x"].forEach(function (e) {
+        var i = t.indexOf(" " + e + " ");
+        if (i !== -1 && i < position) { position = i; trouve = magie.urls[m.image_path]; }
+      });
+    });
+    return trouve;
+  }
+  var minuterieMagie = null;
+  function jouerMagie(texte) {
+    if (/^\[\[image:[a-z]+\]\]$/.test(String(texte || "").trim())) return false;
+    var image = trouverMagie(texte);
+    if (!image) return false;
+    return afficherMagie(image);
+  }
+  function afficherMagie(image) {
+    var zone = $("magie");
+    zone.classList.remove("joue");
+    zone.replaceChildren();
+    var img = el("img");
+    img.alt = "";
+    img.src = image;
+    zone.appendChild(img);
+    void zone.offsetWidth;            // relance l'animation si elle tournait déjà
+    zone.classList.add("joue");
+    clearTimeout(minuterieMagie);
+    minuterieMagie = setTimeout(function () { zone.classList.remove("joue"); zone.replaceChildren(); }, 4400);
+    return true;
+  }
+
+  // ---------- Réglages : mots magiques ----------
+  function ouvrirReglages() {
+    fermerPanneau();
+    basculerMenuNotifs(false);
+    fermerRedaction();
+    $("vue-reglages").hidden = false;
+    chargerMotsMagiques();
+    $("mot-saisie").focus();
+  }
+  function fermerReglages() { $("vue-reglages").hidden = true; }
+  $("ouvrir-reglages").addEventListener("click", ouvrirReglages);
+  $("reglages-retour").addEventListener("click", function () { fermerReglages(); $("texte").focus(); });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && !$("vue-reglages").hidden) fermerReglages();
+  });
+
+  function afficherMotsMagiques() {
+    var ul = $("mots-liste");
+    if (!ul) return;
+    ul.replaceChildren();
+    magie.liste.slice().reverse().forEach(function (m) {
+      var li = el("li", "mot-ligne");
+      var gauche = el("div", "mot-texte");
+      gauche.appendChild(el("div", "mot-nom", m.mot));
+      var auteur = m.created_by === etat.moi ? "Ajouté par toi" : "Ajouté par " + (etat.membres.get(m.created_by) || "l'autre membre");
+      gauche.appendChild(el("div", "mot-auteur", auteur));
+      var actions = el("div", "mot-actions");
+      var essayer = el("button", "bouton-second", "Voir l'effet");
+      essayer.type = "button";
+      essayer.addEventListener("click", function () { if (magie.urls[m.image_path]) afficherMagie(magie.urls[m.image_path]); });
+      var suppr = el("button", "bouton-discret", "Supprimer");
+      suppr.type = "button";
+      suppr.setAttribute("aria-label", "Supprimer le mot « " + m.mot + " »");
+      var arme = null;
+      suppr.addEventListener("click", function () {
+        if (arme) { clearTimeout(arme); supprimerMotMagique(m, suppr); return; }
+        suppr.textContent = "Confirmer la suppression";
+        suppr.classList.add("confirmer");
+        arme = setTimeout(function () { arme = null; suppr.textContent = "Supprimer"; suppr.classList.remove("confirmer"); }, 4000);
+      });
+      actions.appendChild(essayer); actions.appendChild(suppr);
+      gauche.appendChild(actions);
+      var droite = el("div", "mot-image");
+      var img = el("img"); img.alt = "Image du mot « " + m.mot + " »";
+      if (magie.urls[m.image_path]) img.src = magie.urls[m.image_path];
+      droite.appendChild(img);
+      li.appendChild(gauche); li.appendChild(droite);
+      ul.appendChild(li);
+    });
+    $("mots-vide").hidden = magie.liste.length > 0;
+  }
+
+  async function supprimerMotMagique(m, bouton) {
+    bouton.disabled = true;
+    var r = await sb.from("mots_magiques").delete().eq("id", m.id);
+    if (r.error) { bouton.disabled = false; avis("La suppression a échoué. Réessaie dans un instant."); return; }
+    try { await sb.storage.from(SEAU).remove([m.image_path]); } catch (e) {}
+    magie.liste = magie.liste.filter(function (x) { return x.id !== m.id; });
+    afficherMotsMagiques();
+    avis("« " + m.mot + " » supprimé.");
+  }
+
+  // Image choisie : réduite à 720 pixels au plus (les GIF animés restent tels quels)
+  var motImage = null;
+  function erreurMot(texte) { $("mot-erreur").textContent = texte; $("mot-erreur").hidden = !texte; }
+  function preparerImage(fichier) {
+    return new Promise(function (ok, ko) {
+      if (fichier.type === "image/gif") {
+        if (fichier.size > 6 * 1024 * 1024) return ko(new Error("trop_lourd"));
+        return ok(fichier);
+      }
+      var url = URL.createObjectURL(fichier);
+      var image = new Image();
+      image.onload = function () {
+        var echelle = Math.min(1, 720 / Math.max(image.naturalWidth, image.naturalHeight));
+        var c = document.createElement("canvas");
+        c.width = Math.max(1, Math.round(image.naturalWidth * echelle));
+        c.height = Math.max(1, Math.round(image.naturalHeight * echelle));
+        c.getContext("2d").drawImage(image, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob(function (b) {
+          if (b && b.type === "image/webp") return ok(b);
+          c.toBlob(function (png) { png ? ok(png) : ko(new Error("image")); }, "image/png");
+        }, "image/webp", 0.86);
+      };
+      image.onerror = function () { URL.revokeObjectURL(url); ko(new Error("image")); };
+      image.src = url;
+    });
+  }
+  $("mot-fichier").addEventListener("change", async function (ev) {
+    var f = ev.target.files && ev.target.files[0];
+    if (!f) return;
+    erreurMot("");
+    if (!/^image\//.test(f.type) && !/\.(heic|heif)$/i.test(f.name)) { erreurMot("Choisis une image (photo, PNG, JPEG, GIF ou WebP)."); return; }
+    if (f.size > 20 * 1024 * 1024) { erreurMot("Cette image dépasse 20 Mo."); return; }
+    try {
+      motImage = await preparerImage(f);
+      var apercu = $("mot-image-apercu");
+      apercu.src = URL.createObjectURL(motImage);
+      apercu.hidden = false;
+      $("mot-image-invite").hidden = true;
+    } catch (e) {
+      motImage = null;
+      erreurMot(e.message === "trop_lourd" ? "Ce GIF dépasse 6 Mo." : "Cette image n'a pas pu être lue. Essaie une photo au format JPEG ou PNG.");
+    }
+  });
+  $("mot-ajout").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    erreurMot("");
+    var mot = $("mot-saisie").value.trim().replace(/\s+/g, " ");
+    var n = normaliser(mot).trim();
+    if (!n) { $("mot-saisie").focus(); return erreurMot("Écris le mot qui fera apparaître l'image."); }
+    if (magie.liste.some(function (m) { return normaliser(m.mot).trim() === n; })) return erreurMot("« " + mot + " » existe déjà dans la liste.");
+    if (!motImage) return erreurMot("Choisis l'image qui apparaîtra.");
+    var bouton = $("mot-ajouter");
+    bouton.disabled = true; bouton.textContent = "Ajout…";
+    var ext = motImage.type === "image/gif" ? "gif" : motImage.type === "image/png" ? "png" : "webp";
+    var chemin = etat.moi + "/magie/" + identifiantUnique() + "." + ext;
+    try {
+      var envoi = await sb.storage.from(SEAU).upload(chemin, motImage, { contentType: motImage.type || "image/webp", upsert: false });
+      if (envoi.error) throw new Error("envoi");
+      var r = await sb.from("mots_magiques").insert({ mot: mot, image_path: chemin }).select().single();
+      if (r.error) {
+        await sb.storage.from(SEAU).remove([chemin]);
+        throw new Error(r.error.code === "23505" ? "existe" : "ajout");
+      }
+      $("mot-saisie").value = "";
+      motImage = null;
+      $("mot-fichier").value = "";
+      $("mot-image-apercu").hidden = true; $("mot-image-invite").hidden = false;
+      await chargerMotsMagiques();
+      avis("« " + mot + " » ajouté : écris-le dans un message pour voir l'effet.");
+    } catch (e) {
+      erreurMot(e.message === "existe" ? "« " + mot + " » existe déjà dans la liste." : "L'ajout a échoué. Vérifie ta connexion internet et réessaie.");
+    } finally {
+      bouton.disabled = false; bouton.textContent = "Ajouter";
+    }
+  });
+
+  // ---------- Temps réel ----------
+  function abonner() {
+    if (etat.canal) { sb.removeChannel(etat.canal); etat.canal = null; }
+    var canal = sb.channel("fil", { config: { presence: { key: etat.moi } } });
+    canal
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, function (p) {
+        var m = p.new;
+        if (!m || etat.messages.has(m.id)) return;
+        etat.messages.set(m.id, m);
+        afficherMessages("auto");
+        signalerArrivee(m);
+        if (m.sender !== etat.moi && m.body) jouerMagie(m.body);
+      })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "messages" }, function (p) {
+        var id = p.old && p.old.id;
+        if (id != null && etat.messages.delete(id)) { etat.reactions.delete(id); afficherMessages("auto"); }
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "members" }, function () {
+        chargerMembres().then(function () { afficherEntete(); afficherMessages("auto"); }).catch(function () {});
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "reactions" }, function (p) {
+        if (p.eventType === "DELETE") retirerReaction(p.old);
+        else ajouterReaction(p.new);
+        afficherMessages("auto");
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "reads" }, function (p) {
+        var l = p.new;
+        if (!l || !l.user_id) return;
+        if ((etat.lectures.get(l.user_id) || 0) === l.last_read_id) return;
+        etat.lectures.set(l.user_id, l.last_read_id);
+        if (l.user_id !== etat.moi) afficherMessages("auto");
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "tasks" }, function () { chargerTaches(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "mots_magiques" }, function () { chargerMotsMagiques(); })
+      .on("presence", { event: "sync" }, function () {
+        var presents = Object.keys(canal.presenceState());
+        etat.autreEnLigne = presents.some(function (cle) { return cle !== etat.moi; });
+        afficherEntete();
+      })
+      .subscribe(function (statut) {
+        if (statut === "SUBSCRIBED") {
+          etat.enDirect = true;
+          $("etat-liaison").hidden = true;
+          canal.track({ depuis: Date.now() });
+          synchroniser().catch(function () {});
+        } else if (statut === "CHANNEL_ERROR" || statut === "TIMED_OUT" || statut === "CLOSED") {
+          etat.enDirect = false;
+          etat.autreEnLigne = false;
+          if (etat.moi) { $("etat-liaison").hidden = false; afficherEntete(); }
+        }
+      });
+    etat.canal = canal;
+  }
+
+  // ---------- Réactions ----------
+  function ajouterReaction(x) {
+    if (!x || x.message_id == null) return;
+    var liste = etat.reactions.get(x.message_id) || [];
+    if (!liste.some(function (y) { return y.user_id === x.user_id && y.emoji === x.emoji; })) {
+      liste.push({ user_id: x.user_id, emoji: x.emoji });
+    }
+    etat.reactions.set(x.message_id, liste);
+  }
+  function retirerReaction(x) {
+    if (!x || x.message_id == null) return;
+    var liste = (etat.reactions.get(x.message_id) || []).filter(function (y) {
+      return !(y.user_id === x.user_id && y.emoji === x.emoji);
+    });
+    if (liste.length) etat.reactions.set(x.message_id, liste); else etat.reactions.delete(x.message_id);
+  }
+  async function basculerReaction(idMessage, emoji) {
+    var mienne = { message_id: idMessage, user_id: etat.moi, emoji: emoji };
+    var existe = (etat.reactions.get(idMessage) || []).some(function (y) { return y.user_id === etat.moi && y.emoji === emoji; });
+    var r;
+    if (existe) {
+      retirerReaction(mienne); afficherMessages("auto");
+      r = await sb.from("reactions").delete().eq("message_id", idMessage).eq("user_id", etat.moi).eq("emoji", emoji);
+      if (r.error) { ajouterReaction(mienne); afficherMessages("auto"); avis("La réaction n'a pas pu être retirée."); }
+    } else {
+      ajouterReaction(mienne); afficherMessages("auto");
+      r = await sb.from("reactions").insert({ message_id: idMessage, emoji: emoji });
+      if (r.error && r.error.code !== "23505") { retirerReaction(mienne); afficherMessages("auto"); avis("La réaction n'a pas pu être ajoutée."); }
+    }
+  }
+
+  // ---------- Envoi ----------
+  function identifiantUnique() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    var o = new Uint8Array(16);
+    crypto.getRandomValues(o);
+    return Array.from(o, function (x) { return x.toString(16).padStart(2, "0"); }).join("");
+  }
+
+  async function insererMessage(ligne) {
+    var r = await sb.from("messages").insert(ligne).select().single();
+    if (r.error) throw r.error;
+    etat.messages.set(r.data.id, r.data);
+    afficherMessages("bas");
+  }
+
+  async function envoyerFichier(fichier) {
+    var ext = extension(fichier.name);
+    var chemin = etat.moi + "/" + identifiantUnique() + (ext ? "." + ext : "");
+    var depot = await sb.storage.from(SEAU).upload(chemin, fichier, {
+      contentType: fichier.type || "application/octet-stream", upsert: false
+    });
+    if (depot.error) throw depot.error;
+    try {
+      await insererMessage({
+        file_path: chemin,
+        file_name: (fichier.name || "Fichier").slice(0, 255),
+        file_size: fichier.size,
+        file_type: fichier.type || "application/octet-stream"
+      });
+    } catch (e) {
+      await sb.storage.from(SEAU).remove([chemin]);
+      throw e;
+    }
+  }
+
+  async function envoyer() {
+    if (etat.envoiEnCours) return;
+    var champ = $("texte");
+    var texte = champ.value.trim();
+    if (!texte && !etat.enAttente.length) return;
+    etat.envoiEnCours = true;
+    var bouton = $("envoyer");
+    bouton.disabled = true;
+    $("envoyer-texte").textContent = "Envoi…";
+    try {
+      if (texte) {
+        await insererMessage({ body: texte });
+        champ.value = "";
+        ajusterHauteur();
+        jouerMagie(texte);
+      }
+      while (etat.enAttente.length) {
+        await envoyerFichier(etat.enAttente[0]);
+        etat.enAttente.shift();
+        afficherEnAttente();
+      }
+    } catch (e) {
+      avis("L'envoi a échoué. Vérifie ta connexion internet et réessaie.");
+    } finally {
+      etat.envoiEnCours = false;
+      bouton.disabled = false;
+      $("envoyer-texte").textContent = "Envoyer";
+      champ.focus();
+    }
+  }
+  $("saisie").addEventListener("submit", function (ev) { ev.preventDefault(); envoyer(); });
+  $("texte").addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter" && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); envoyer(); }
+  });
+  function ajusterHauteur() {
+    var c = $("texte");
+    c.style.height = "auto";
+    c.style.height = Math.min(c.scrollHeight + 2, 180) + "px";
+  }
+  $("texte").addEventListener("input", ajusterHauteur);
+
+  // Place un texte dans le message en cours, à l'endroit du curseur
+  function mettreDansMessage(texte, sansEspace) {
+    var c = $("texte");
+    var debut = c.selectionStart == null ? c.value.length : c.selectionStart;
+    var fin = c.selectionEnd == null ? c.value.length : c.selectionEnd;
+    var avant = c.value.slice(0, debut), apres = c.value.slice(fin);
+    if (!sansEspace && avant && !/\s$/.test(avant)) texte = " " + texte;
+    c.value = (avant + texte + apres).slice(0, 4000);
+    var position = Math.min((avant + texte).length, c.value.length);
+    c.focus();
+    c.setSelectionRange(position, position);
+    ajusterHauteur();
+  }
+
+  // ---------- Fichiers à joindre ----------
+  function ajouterFichiers(fichiers) {
+    Array.from(fichiers || []).forEach(function (f) {
+      if (!f.size) { avis("« " + f.name + " » est vide ou n'est pas un fichier : pour un dossier, envoie-le en .zip."); return; }
+      if (f.size > TAILLE_MAX) { avis("« " + f.name + " » dépasse la limite de 20 Mo."); return; }
+      etat.enAttente.push(f);
+    });
+    afficherEnAttente();
+  }
+  function afficherEnAttente() {
+    var zone = $("en-attente");
+    zone.replaceChildren();
+    etat.enAttente.forEach(function (f, i) {
+      var puce = el("span", "puce");
+      puce.appendChild(el("span", null, f.name + " (" + poids(f.size) + ")"));
+      var b = el("button", null, "×");
+      b.type = "button";
+      b.setAttribute("aria-label", "Retirer " + f.name);
+      b.addEventListener("click", function () {
+        if (etat.envoiEnCours) return;
+        etat.enAttente.splice(i, 1); afficherEnAttente();
+      });
+      puce.appendChild(b);
+      zone.appendChild(puce);
+    });
+    zone.hidden = !etat.enAttente.length;
+  }
+  $("joindre").addEventListener("click", function () { $("selecteur").click(); });
+  $("selecteur").addEventListener("change", function (ev) { ajouterFichiers(ev.target.files); ev.target.value = ""; });
+  $("texte").addEventListener("paste", function (ev) {
+    var f = ev.clipboardData && ev.clipboardData.files;
+    if (f && f.length) { ev.preventDefault(); ajouterFichiers(f); }
+  });
+
+  var survols = 0;
+  function contientFichiers(ev) {
+    return ev.dataTransfer && Array.from(ev.dataTransfer.types || []).indexOf("Files") !== -1;
+  }
+  window.addEventListener("dragenter", function (ev) {
+    if ($("vue-fil").hidden || !contientFichiers(ev)) return;
+    ev.preventDefault(); survols += 1; $("depot").hidden = false;
+  });
+  window.addEventListener("dragover", function (ev) { if (contientFichiers(ev)) ev.preventDefault(); });
+  window.addEventListener("dragleave", function (ev) {
+    if (!contientFichiers(ev)) return;
+    survols = Math.max(0, survols - 1);
+    if (!survols) $("depot").hidden = true;
+  });
+  window.addEventListener("drop", function (ev) {
+    if (!contientFichiers(ev)) return;
+    ev.preventDefault(); survols = 0; $("depot").hidden = true;
+    if (!$("vue-fil").hidden) ajouterFichiers(ev.dataTransfer.files);
+  });
+
+  // ---------- Ouvrir, télécharger, supprimer ----------
+  async function ouvrirFichier(m, telecharger) {
+    var fenetre = null;
+    if (!telecharger) fenetre = window.open("", "_blank");
+    var r = await sb.storage.from(SEAU).createSignedUrl(m.file_path, 300, telecharger ? { download: m.file_name || true } : undefined);
+    if (r.error || !r.data) {
+      if (fenetre) fenetre.close();
+      avis("Ce fichier est introuvable ou la connexion est coupée.");
+      return;
+    }
+    var adresse = r.data.signedUrl;
+    if (telecharger) {
+      var a = document.createElement("a");
+      a.href = adresse; a.rel = "noopener";
+      document.body.appendChild(a); a.click(); a.remove();
+    } else if (fenetre) {
+      fenetre.opener = null;
+      fenetre.location.href = adresse;
+    } else {
+      window.location.href = adresse;
+    }
+  }
+
+  async function supprimerMessage(m) {
+    var r = await sb.from("messages").delete().eq("id", m.id);
+    if (r.error) { avis("La suppression a échoué. Réessaie dans un instant."); return; }
+    if (m.file_path) { try { await sb.storage.from(SEAU).remove([m.file_path]); } catch (e) {} }
+    etat.messages.delete(m.id);
+    etat.reactions.delete(m.id);
+    afficherMessages("auto");
+  }
+
+  // ---------- Barre d'outils (en haut) ----------
+  var VOLETS = { calc: "Calculatrice", tva: "Prix et marges", conv: "Convertisseur", liste: "Liste à deux" };
+  function ouvrirOutil(volet) {
+    etat.volet = volet;
+    fermerEmojis();
+    $("zone-outils").hidden = false;
+    $("panneau-titre").textContent = VOLETS[volet];
+    Object.keys(VOLETS).forEach(function (v) { $("volet-" + v).hidden = v !== volet; });
+    Array.from($("barre-outils").querySelectorAll("[data-volet]")).forEach(function (o) {
+      o.setAttribute("aria-expanded", String(o.dataset.volet === volet));
+    });
+    if (volet === "liste") { afficherTaches(); $("liste-texte").focus(); }
+    if (volet === "calc") $("calc-saisie").focus();
+    if (volet === "tva") $("com-net").focus();
+    if (volet === "conv") $("conv-valeur").focus();
+  }
+  function fermerOutil() {
+    $("zone-outils").hidden = true;
+    Array.from($("barre-outils").querySelectorAll("[data-volet]")).forEach(function (o) { o.setAttribute("aria-expanded", "false"); });
+  }
+  function fermerPanneau() { fermerOutil(); fermerEmojis(); }
+  $("barre-outils").addEventListener("click", function (ev) {
+    var o = ev.target.closest("[data-volet]");
+    if (!o) return;
+    if (!$("zone-outils").hidden && etat.volet === o.dataset.volet) return fermerOutil();
+    ouvrirOutil(o.dataset.volet);
+  });
+  $("panneau-fermer").addEventListener("click", fermerOutil);
+
+  // ---------- Panneau d'émojis et d'images (en bas) ----------
+  function fermerEmojis() {
+    $("panneau-emojis").hidden = true;
+    $("ouvrir-emojis").setAttribute("aria-expanded", "false");
+  }
+  function ouvrirEmojis() {
+    fermerOutil();
+    construireEmojis();
+    $("panneau-emojis").hidden = false;
+    $("ouvrir-emojis").setAttribute("aria-expanded", "true");
+  }
+  $("ouvrir-emojis").addEventListener("click", function () {
+    if (!$("panneau-emojis").hidden) return fermerEmojis();
+    ouvrirEmojis();
+  });
+  $("emojis-fermer").addEventListener("click", fermerEmojis);
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key !== "Escape") return;
+    if (!$("panneau-emojis").hidden || !$("zone-outils").hidden) { fermerPanneau(); $("texte").focus(); }
+  });
+
+  // Images-émojis : envoyées comme un message spécial, affichées en image dans le fil
+  var IMAGES_EMOJIS = {};
+  var NOMS_IMAGES = { porsche: "Porsche", newyork: "New York", bracelet: "Bracelet", oslo: "Oslo", melon: "Melon", david: "David" };
+  function imageDuMessage(texte) {
+    var m = /^\[\[image:([a-z]+)\]\]$/.exec(String(texte || "").trim());
+    return m && NOMS_IMAGES[m[1]] ? m[1] : null;
+  }
+  async function envoyerImage(nom) {
+    try { await insererMessage({ body: "[[image:" + nom + "]]" }); }
+    catch (e) { avis("L'envoi a échoué. Vérifie ta connexion internet et réessaie."); }
+  }
+
+  var EMOJIS = [
+    ["Visages", "😀 😄 😁 😅 😂 🤣 😊 🙂 😉 😍 😘 😎 🤩 🥳 🤔 🤨 😐 😬 🙄 😴 😮 😱 😢 😭 😤 😡 🤯 🥲 😇 🤗 🫡 🤫"],
+    ["Gestes", "👍 👎 👌 🙏 👏 🙌 💪 🤞 ✌️ 🤙 👋 🤝 ✍️ 👀 🫶 🤷 🙋 💁"],
+    ["Travail", "📄 📎 📁 📊 📈 📉 💶 🧾 📦 🚚 🏭 📞 💻 📅 ✉️ 🔗 🖊️ 🗂️ 🎯 🤖"],
+    ["Signes", "❤️ 🔥 ✅ ❌ ⚠️ ❓ ❗ 💯 ⭐ 🎉 💡 📌 ⏰ 🚀 🆗 🔜 ➡️ ⬆️ ⬇️"],
+    ["Quotidien", "☕ 🍕 🍔 🥐 🧀 🍺 🥂 🎓 🏔️ ⚽ 🎵 🎮 🚗 🚆 ✈️ 🏠 ☀️ 🌧️ ❄️ 😷"]
+  ];
+  var emojisPrets = false;
+  function construireEmojis() {
+    if (emojisPrets) return;
+    emojisPrets = true;
+    var volet = $("volet-emojis");
+    volet.appendChild(el("p", "emojis-groupe", "Vos images : un clic pour l'envoyer"));
+    var images = el("div", "images-grille");
+    Object.keys(NOMS_IMAGES).forEach(function (nom) {
+      if (!IMAGES_EMOJIS[nom]) return;
+      var b = el("button", "image-tuile");
+      b.type = "button";
+      b.title = "Envoyer " + NOMS_IMAGES[nom];
+      var img = el("img"); img.src = IMAGES_EMOJIS[nom]; img.alt = "";
+      b.appendChild(img);
+      b.appendChild(el("span", null, NOMS_IMAGES[nom]));
+      b.addEventListener("click", function () { envoyerImage(nom); });
+      images.appendChild(b);
+    });
+    volet.appendChild(images);
+    EMOJIS.forEach(function (groupe) {
+      volet.appendChild(el("p", "emojis-groupe", groupe[0]));
+      var grille = el("div", "emojis-grille");
+      groupe[1].split(" ").forEach(function (e) {
+        var b = el("button", null, e);
+        b.type = "button";
+        b.addEventListener("click", function () { mettreDansMessage(e, true); });
+        grille.appendChild(b);
+      });
+      volet.appendChild(grille);
+    });
+  }
+
+  // ----- Nombres -----
+  function lireNombre(texte) {
+    var t = String(texte || "").replace(/\s/g, "").replace(",", ".");
+    if (t === "" || !/^-?\d*\.?\d*$/.test(t)) return NaN;
+    return parseFloat(t);
+  }
+  function ecrireNombre(n, decimales) {
+    var options = decimales == null ? { maximumFractionDigits: 8 } : { minimumFractionDigits: decimales, maximumFractionDigits: decimales };
+    return n.toLocaleString("fr-FR", options);
+  }
+  function euros(n) { return ecrireNombre(n, 2) + " €"; }
+
+  // ----- Calculatrice : lit l'expression elle-même, sans jamais exécuter de code -----
+  function calculer(expression) {
+    var s = expression.replace(/\s/g, "").replace(/,/g, ".").replace(/[×x]/g, "*").replace(/[÷:]/g, "/").replace(/−/g, "-");
+    var i = 0, pourcent = false;
+    function nombre() {
+      var d = i;
+      while (i < s.length && /[0-9.]/.test(s[i])) i++;
+      var v = parseFloat(s.slice(d, i));
+      if (d === i || isNaN(v)) throw new Error("nombre");
+      return v;
+    }
+    function facteur() {
+      var v;
+      if (s[i] === "-") { i++; return -facteur(); }
+      if (s[i] === "+") { i++; return facteur(); }
+      if (s[i] === "(") { i++; v = somme(); if (s[i] !== ")") throw new Error("parenthese"); i++; }
+      else v = nombre();
+      while (s[i] === "%") { i++; v = v / 100; pourcent = true; }
+      return v;
+    }
+    function produit() {
+      pourcent = false;
+      var v = facteur();
+      var seul = true;
+      while (s[i] === "*" || s[i] === "/") {
+        seul = false;
+        var op = s[i++], w = facteur();
+        v = op === "*" ? v * w : v / w;
+      }
+      if (!seul) pourcent = false;
+      return v;
+    }
+    function somme() {
+      var v = produit();
+      while (s[i] === "+" || s[i] === "-") {
+        var op = s[i++], w = produit();
+        if (pourcent) w = v * w;          // 200 + 10 % donne 220
+        v = op === "+" ? v + w : v - w;
+      }
+      pourcent = false;
+      return v;
+    }
+    var r = somme();
+    if (i !== s.length || !isFinite(r)) throw new Error("expression");
+    return Math.round(r * 1e10) / 1e10;
+  }
+  function apercuCalcul() {
+    var saisie = $("calc-saisie").value;
+    var sortie = "";
+    if (saisie.trim() && /[+\-−×x*÷:\/%()]/.test(saisie)) {
+      try { sortie = "= " + ecrireNombre(calculer(saisie)); } catch (e) { sortie = ""; }
+    }
+    $("calc-apercu").textContent = sortie;
+  }
+  function validerCalcul() {
+    var c = $("calc-saisie");
+    if (!c.value.trim()) return;
+    try { c.value = String(calculer(c.value)).replace(".", ","); $("calc-apercu").textContent = ""; }
+    catch (e) { $("calc-apercu").textContent = "Calcul incomplet"; }
+  }
+  $("calc-touches").addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-t]");
+    if (!b) return;
+    var c = $("calc-saisie"), t = b.dataset.t;
+    if (t === "C") c.value = "";
+    else if (t === "⌫") c.value = c.value.slice(0, -1);
+    else if (t === "=") return validerCalcul();
+    else if (t === "(") {
+      var ouvertes = (c.value.match(/\(/g) || []).length - (c.value.match(/\)/g) || []).length;
+      c.value += ouvertes > 0 && /[\d,)%]$/.test(c.value) ? ")" : "(";
+    }
+    else c.value += /[+−×÷]/.test(t) ? " " + t + " " : t;
+    apercuCalcul();
+  });
+  $("calc-saisie").addEventListener("input", apercuCalcul);
+  $("calc-saisie").addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter") { ev.preventDefault(); validerCalcul(); }
+  });
+  $("calc-inserer").addEventListener("click", function () {
+    var saisie = $("calc-saisie").value.trim();
+    if (!saisie) return;
+    try {
+      var r = ecrireNombre(calculer(saisie));
+      mettreDansMessage(/[+\-−×x*÷:\/%()]/.test(saisie) ? saisie.replace(/\s+/g, " ") + " = " + r : r);
+    } catch (e) { $("calc-apercu").textContent = "Calcul incomplet"; }
+  });
+
+  // ----- TVA et marge -----
+  var resumeTva = "";
+  function ligneResultat(dl, libelle, valeur) {
+    dl.appendChild(el("dt", null, libelle));
+    dl.appendChild(el("dd", null, valeur));
+  }
+  function calculerTva() {
+    var dl = $("tva-resultat"); dl.replaceChildren();
+    var montant = lireNombre($("tva-montant").value);
+    var taux = parseFloat($("tva-taux").value);
+    resumeTva = "";
+    if (isNaN(montant)) return;
+    var ht = $("tva-sens").value === "ht" ? montant : montant / (1 + taux / 100);
+    var ttc = ht * (1 + taux / 100);
+    ligneResultat(dl, "Hors taxes", euros(ht));
+    ligneResultat(dl, "TVA " + String(taux).replace(".", ",") + " %", euros(ttc - ht));
+    ligneResultat(dl, "Toutes taxes", euros(ttc));
+    resumeTva = euros(ht) + " HT + " + euros(ttc - ht) + " de TVA (" + String(taux).replace(".", ",") + " %) = " + euros(ttc) + " TTC";
+  }
+  var resumeMarge = "";
+  function calculerMarge() {
+    var dl = $("marge-resultat"); dl.replaceChildren();
+    var achat = lireNombre($("marge-achat").value), vente = lireNombre($("marge-vente").value);
+    resumeMarge = "";
+    if (isNaN(achat) || isNaN(vente) || achat <= 0 || vente <= 0) return;
+    var marge = vente - achat;
+    ligneResultat(dl, "Marge", euros(marge));
+    ligneResultat(dl, "Taux de marge (sur l'achat)", ecrireNombre(marge / achat * 100, 1) + " %");
+    ligneResultat(dl, "Taux de marque (sur la vente)", ecrireNombre(marge / vente * 100, 1) + " %");
+    ligneResultat(dl, "Coefficient", ecrireNombre(vente / achat, 2));
+    resumeMarge = "Achat " + euros(achat) + ", vente " + euros(vente) + " : marge " + euros(marge) +
+      ", taux de marge " + ecrireNombre(marge / achat * 100, 1) + " %, taux de marque " + ecrireNombre(marge / vente * 100, 1) + " %";
+  }
+  // Commission : prix à afficher pour toucher un montant net quand une partie externe prend un % du prix de vente
+  var resumeCommission = "";
+  function calculerCommission() {
+    var dl = $("com-resultat"); dl.replaceChildren();
+    $("com-formule").textContent = "";
+    resumeCommission = "";
+    var net = lireNombre($("com-net").value), taux = lireNombre($("com-taux").value);
+    if (isNaN(net) || isNaN(taux) || net <= 0) return;
+    if (taux < 0 || taux >= 100) { $("com-formule").textContent = "La part prélevée doit être comprise entre 0 et 99 %."; return; }
+    var prix = net / (1 - taux / 100);
+    var part = prix - net;
+    ligneResultat(dl, "Prix à afficher", euros(prix));
+    ligneResultat(dl, "Part prélevée", euros(part));
+    ligneResultat(dl, "Tu touches", euros(net));
+    ligneResultat(dl, "Hausse à appliquer", "+ " + ecrireNombre((prix / net - 1) * 100, 1) + " %");
+    $("com-formule").textContent = "Calcul : " + ecrireNombre(net) + " ÷ (1 − " + ecrireNombre(taux / 100) + ") = " + ecrireNombre(net) + " ÷ " + ecrireNombre(1 - taux / 100);
+    resumeCommission = "Pour toucher " + euros(net) + " avec " + ecrireNombre(taux) + " % prélevés : prix à afficher " + euros(prix) + " (part prélevée " + euros(part) + ")";
+  }
+  ["com-net", "com-taux"].forEach(function (id) { $(id).addEventListener("input", calculerCommission); });
+  ["tva-montant", "tva-taux", "tva-sens"].forEach(function (id) { $(id).addEventListener("input", calculerTva); });
+  ["marge-achat", "marge-vente"].forEach(function (id) { $(id).addEventListener("input", calculerMarge); });
+  $("tva-inserer").addEventListener("click", function () {
+    var t = [resumeCommission, resumeTva, resumeMarge].filter(Boolean).join("\n");
+    if (t) mettreDansMessage(t); else avis("Saisis d'abord un montant.");
+  });
+
+  // ----- Convertisseur -----
+  var GRANDEURS = {
+    "Monnaie": { "EUR": 1 },
+    "Longueur": { "mm": 0.001, "cm": 0.01, "m": 1, "km": 1000, "pouce": 0.0254, "pied": 0.3048, "mile": 1609.344 },
+    "Poids": { "g": 0.001, "kg": 1, "tonne": 1000, "once": 0.028349523125, "livre": 0.45359237 },
+    "Volume": { "mL": 0.001, "cL": 0.01, "L": 1, "m³": 1000, "gallon US": 3.785411784 },
+    "Surface": { "cm²": 0.0001, "m²": 1, "hectare": 10000, "km²": 1000000 },
+    "Température": { "°C": null, "°F": null, "K": null },
+    "Durée": { "seconde": 1, "minute": 60, "heure": 3600, "jour": 86400, "semaine": 604800 }
+  };
+  // Monnaies : taux de référence de la Banque centrale européenne (mis à jour chaque jour ouvré)
+  var MONNAIES = {
+    EUR: "EUR, euro", USD: "USD, dollar américain", GBP: "GBP, livre sterling", CHF: "CHF, franc suisse",
+    JPY: "JPY, yen", CAD: "CAD, dollar canadien", AUD: "AUD, dollar australien", CNY: "CNY, yuan",
+    SEK: "SEK, couronne suédoise", NOK: "NOK, couronne norvégienne", DKK: "DKK, couronne danoise",
+    PLN: "PLN, zloty", CZK: "CZK, couronne tchèque", HUF: "HUF, forint", TRY: "TRY, livre turque",
+    BRL: "BRL, réal", INR: "INR, roupie indienne", MXN: "MXN, peso mexicain", ZAR: "ZAR, rand"
+  };
+  var taux = { date: null, charge: null };
+  function chargerTaux() {
+    if (taux.date && Date.now() - taux.charge < 3 * 3600 * 1000) return Promise.resolve(true);
+    $("conv-note").hidden = false;
+    $("conv-note").textContent = "Chargement des taux du jour…";
+    return delai(fetch("https://api.frankfurter.dev/v1/latest?from=EUR"), 10000).then(function (rep) { return rep.json(); }).then(function (d) {
+      if (!d || !d.rates) throw new Error("taux");
+      var m = { EUR: 1 };
+      Object.keys(MONNAIES).forEach(function (code) { if (d.rates[code]) m[code] = 1 / d.rates[code]; });
+      GRANDEURS["Monnaie"] = m;
+      taux.date = d.date; taux.charge = Date.now();
+      return true;
+    }).catch(function () { return false; });
+  }
+  function noteMonnaie(ok) {
+    var note = $("conv-note");
+    note.hidden = false;
+    if (!ok) { note.textContent = "Taux du jour indisponibles : vérifie ta connexion internet."; return; }
+    var d = taux.date ? new Date(taux.date + "T12:00:00") : null;
+    note.textContent = "Taux de référence de la Banque centrale européenne du " + (d ? d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "jour") + ".";
+  }
+  function remplirSelect(select, valeurs, choisie) {
+    select.replaceChildren();
+    valeurs.forEach(function (v) { var o = el("option", null, MONNAIES[v] && select.id !== "conv-famille" ? MONNAIES[v] : v); o.value = v; select.appendChild(o); });
+    if (choisie) select.value = choisie;
+  }
+  async function changerGrandeur() {
+    var famille = $("conv-famille").value;
+    if (famille === "Monnaie") {
+      var ok = await chargerTaux();
+      if ($("conv-famille").value !== "Monnaie") return;
+      noteMonnaie(ok);
+      var codes = Object.keys(MONNAIES).filter(function (c) { return GRANDEURS["Monnaie"][c]; });
+      remplirSelect($("conv-de"), codes, "EUR");
+      remplirSelect($("conv-vers"), codes, codes.indexOf("USD") !== -1 ? "USD" : codes[0]);
+      convertir();
+      return;
+    }
+    $("conv-note").hidden = true;
+    var unites = Object.keys(GRANDEURS[famille]);
+    remplirSelect($("conv-de"), unites, unites[0]);
+    remplirSelect($("conv-vers"), unites, unites[1]);
+    convertir();
+  }
+  function convertir() {
+    var famille = $("conv-famille").value, de = $("conv-de").value, vers = $("conv-vers").value;
+    var v = lireNombre($("conv-valeur").value);
+    if (isNaN(v)) { $("conv-sortie").value = ""; return; }
+    var r;
+    if (famille === "Température") {
+      var celsius = de === "°C" ? v : de === "°F" ? (v - 32) * 5 / 9 : v - 273.15;
+      r = vers === "°C" ? celsius : vers === "°F" ? celsius * 9 / 5 + 32 : celsius + 273.15;
+    } else {
+      r = v * GRANDEURS[famille][de] / GRANDEURS[famille][vers];
+    }
+    $("conv-sortie").value = famille === "Monnaie" ? ecrireNombre(r, 2) + " " + vers : ecrireNombre(Math.round(r * 1e8) / 1e8) + " " + vers;
+  }
+  remplirSelect($("conv-famille"), Object.keys(GRANDEURS), "Monnaie");
+  $("conv-famille").addEventListener("change", changerGrandeur);
+  ["conv-valeur", "conv-de", "conv-vers"].forEach(function (id) { $(id).addEventListener("input", convertir); });
+  $("conv-inverser").addEventListener("click", function () {
+    var de = $("conv-de").value; $("conv-de").value = $("conv-vers").value; $("conv-vers").value = de; convertir();
+  });
+  $("conv-inserer").addEventListener("click", function () {
+    if (!$("conv-sortie").value) return avis("Saisis d'abord une valeur.");
+    mettreDansMessage($("conv-valeur").value.trim() + " " + $("conv-de").value + " = " + $("conv-sortie").value);
+  });
+  // Les taux ne sont chargés qu'à l'ouverture du convertisseur
+  $("barre-outils").addEventListener("click", function (ev) {
+    var o = ev.target.closest("[data-volet='conv']");
+    if (o && $("conv-famille").value === "Monnaie") changerGrandeur();
+  });
+
+  // ----- Liste à deux -----
+  async function chargerTaches() {
+    var r = await sb.from("tasks").select("*").order("id");
+    if (r.error) return;
+    etat.taches = r.data;
+    afficherTaches();
+  }
+  function afficherTaches() {
+    var restantes = etat.taches.filter(function (t) { return !t.done; }).length;
+    var pastille = $("pastille-taches");
+    pastille.textContent = restantes;
+    pastille.hidden = !restantes;
+    var ul = $("taches");
+    ul.replaceChildren();
+    var triees = etat.taches.slice().sort(function (a, b) { return (a.done - b.done) || (a.id - b.id); });
+    triees.forEach(function (t) {
+      var li = el("li", "tache" + (t.done ? " faite" : ""));
+      var coche = el("input"); coche.type = "checkbox"; coche.checked = t.done; coche.id = "tache-" + t.id;
+      coche.addEventListener("change", async function () {
+        t.done = coche.checked; afficherTaches();
+        var r = await sb.from("tasks").update({ done: t.done, done_at: t.done ? new Date().toISOString() : null }).eq("id", t.id);
+        if (r.error) { avis("La liste n'a pas pu être mise à jour."); chargerTaches(); }
+      });
+      var libelle = el("label", null, t.label); libelle.htmlFor = coche.id;
+      var retirer = el("button", "bouton-icone", "×");
+      retirer.type = "button"; retirer.style.fontSize = "19px";
+      retirer.setAttribute("aria-label", "Retirer « " + t.label + " »");
+      retirer.addEventListener("click", async function () {
+        etat.taches = etat.taches.filter(function (x) { return x.id !== t.id; }); afficherTaches();
+        var r = await sb.from("tasks").delete().eq("id", t.id);
+        if (r.error) { avis("La liste n'a pas pu être mise à jour."); chargerTaches(); }
+      });
+      li.appendChild(coche); li.appendChild(libelle); li.appendChild(retirer);
+      ul.appendChild(li);
+    });
+    $("taches-vide").hidden = etat.taches.length > 0;
+  }
+  $("liste-ajout").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    var champ = $("liste-texte"), texte = champ.value.trim();
+    if (!texte) return;
+    champ.value = "";
+    var r = await sb.from("tasks").insert({ label: texte }).select().single();
+    if (r.error) { champ.value = texte; avis("L'ajout à la liste a échoué."); return; }
+    if (!etat.taches.some(function (t) { return t.id === r.data.id; })) etat.taches.push(r.data);
+    afficherTaches();
+  });
+
+  // ---------- Rédaction : corriger ou reformuler n'importe quel texte en deux clics ----------
+  var redac = { pret: false, resultat: null, source: "", vue: "final", historique: [] };
+
+  function ouvrirRedaction(texte) {
+    fermerPanneau();
+    fermerReglages();
+    basculerMenuNotifs(false);
+    $("vue-redaction").hidden = false;
+    if (texte) { $("redac-texte").value = texte.slice(0, 10000); }
+    majCompte();
+    preparerRedaction();
+    chargerHistorique();
+    if (location.hash !== "#redaction") history.replaceState(null, "", location.pathname + "#redaction");
+    $("redac-texte").focus();
+  }
+  function fermerRedaction() {
+    if ($("vue-redaction").hidden) return;
+    $("vue-redaction").hidden = true;
+    if (location.hash === "#redaction") history.replaceState(null, "", location.pathname);
+  }
+  // Ouverture directe : raccourci de l'icône (#redaction) ou texte partagé depuis une autre appli (?text=)
+  function ouvrirRedactionDemandee() {
+    var params = new URLSearchParams(location.search);
+    var partage = [params.get("title"), params.get("text"), params.get("url")].filter(Boolean).join("\n").trim();
+    if (partage) {
+      history.replaceState(null, "", location.pathname);
+      ouvrirRedaction(partage);
+      return true;
+    }
+    if (location.hash === "#redaction") { ouvrirRedaction(); return true; }
+    return false;
+  }
+  $("ouvrir-redaction").addEventListener("click", function () { ouvrirRedaction(); });
+  $("redac-retour").addEventListener("click", function () { fermerRedaction(); $("texte").focus(); });
+  window.addEventListener("hashchange", function () {
+    if (!etat.moi || $("vue-fil").hidden) return;
+    if (location.hash === "#redaction") ouvrirRedaction(); else fermerRedaction();
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && !$("vue-redaction").hidden && $("menu-notifs").hidden) fermerRedaction();
+  });
+
+  async function preparerRedaction() {
+    if (redac.pret) return;
+    try {
+      var rep = await delai(fetch(URL_ASSISTANT), 10000);
+      var infos = await rep.json();
+      etat.reformulation = Boolean(infos && infos.reformulation);
+      redac.pret = true;
+    } catch (e) { etat.reformulation = false; }
+    var ia = etat.reformulation;
+    Array.from(document.querySelectorAll("#redac-tons button, #redac-langues button")).forEach(function (b) { b.disabled = !ia; });
+    $("redac-consigne").disabled = !ia;
+    $("redac-libre").querySelector("button").disabled = !ia;
+    $("redac-moteur").textContent = ia ? "Avec Claude" : "Correcteur gratuit";
+    $("redac-note").textContent = ia
+      ? "Ctrl + Entrée (ou Cmd + Entrée) corrige directement. Les textes sont traités par Claude (Anthropic), puis le fil ne les garde que dans l'historique de cet appareil."
+      : "La correction marche déjà. Reformuler, traduire et « Autre demande » s'activeront dès que la clé d'IA sera ajoutée au serveur.";
+  }
+
+  function majCompte() {
+    var n = $("redac-texte").value.trim();
+    var mots = n ? n.split(/\s+/).length : 0;
+    $("redac-compte").textContent = mots ? mots + (mots > 1 ? " mots" : " mot") : "";
+  }
+  $("redac-texte").addEventListener("input", majCompte);
+  $("redac-texte").addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter" && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); lancerRedaction({ action: "corriger" }); }
+  });
+  $("redac-coller").addEventListener("click", async function () {
+    try {
+      var t = await navigator.clipboard.readText();
+      if (!t) return avis("Le presse-papiers est vide.");
+      $("redac-texte").value = t.replace(/\r\n?/g, "\n").replace(/\u00a0/g, " ").slice(0, 10000);
+      majCompte();
+      $("redac-texte").focus();
+    } catch (e) {
+      $("redac-texte").focus();
+      avis("Colle ton texte avec Ctrl+V (ou Cmd+V, ou un appui long sur téléphone).");
+    }
+  });
+  $("redac-effacer").addEventListener("click", function () {
+    $("redac-texte").value = ""; majCompte();
+    $("redac-resultat").hidden = true; $("redac-vide").hidden = false;
+    $("redac-texte").focus();
+  });
+
+  // Corrections du correcteur gratuit, appliquées de la fin vers le début
+  function appliquerCorrections(texte, fautes) {
+    var liste = (fautes || []).filter(function (m) { return m.replacements && m.replacements.length; })
+      .sort(function (a, b) { return b.offset - a.offset; });
+    var borne = Infinity, explications = [];
+    liste.forEach(function (m) {
+      if (m.offset + m.length > borne) return;
+      var avant = texte.slice(m.offset, m.offset + m.length), apres = m.replacements[0].value;
+      texte = texte.slice(0, m.offset) + apres + texte.slice(m.offset + m.length);
+      borne = m.offset;
+      explications.unshift({ avant: avant, apres: apres, explication: m.message || "" });
+    });
+    return { texte: texte, fautes: explications };
+  }
+  async function appelerAssistant(charge, deuxiemeEssai) {
+    var s = deuxiemeEssai ? await sb.auth.refreshSession() : await sb.auth.getSession();
+    var jeton = s.data && s.data.session && s.data.session.access_token;
+    if (!jeton) throw new Error("connexion");
+    var rep = await delai(fetch(URL_ASSISTANT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + jeton },
+      body: JSON.stringify(charge)
+    }), 60000);
+    var corps = {};
+    try { corps = await rep.json(); } catch (e) {}
+    // Jeton refusé : on renouvelle la connexion une fois avant d'abandonner
+    if (rep.status === 401 && !deuxiemeEssai) return appelerAssistant(charge, true);
+    if (!rep.ok) throw new Error(corps.code || "service");
+    return corps;
+  }
+  async function corrigerTexte(texte) {
+    if (etat.reformulation) return appelerAssistant({ action: "corriger", texte: texte });
+    try {
+      var rep = await delai(fetch(URL_CORRECTEUR, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ text: texte, language: "auto", preferredVariants: "fr-FR,en-GB" })
+      }), 20000);
+      if (!rep.ok) throw new Error("correcteur");
+      var data = await rep.json();
+      return appliquerCorrections(texte, data.matches);
+    } catch (e) {
+      return appelerAssistant({ action: "corriger", texte: texte });
+    }
+  }
+
+  // Différences mot à mot entre deux textes (pour surligner ce qui a changé)
+  function decouper(t) { return t.match(/\s+|[\p{L}\p{N}'’-]+|[^\s\p{L}\p{N}]/gu) || []; }
+  function differences(a, b) {
+    var x = decouper(a), y = decouper(b);
+    if (x.length * y.length > 4000000) return null;
+    var n = x.length, m = y.length, L = [];
+    for (var i = 0; i <= n; i++) L.push(new Uint16Array(m + 1));
+    for (i = n - 1; i >= 0; i--) for (var j = m - 1; j >= 0; j--) L[i][j] = x[i] === y[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+    var morceaux = [];
+    function ajouter(type, texte) {
+      var dernier = morceaux[morceaux.length - 1];
+      if (dernier && dernier.type === type) dernier.texte += texte; else morceaux.push({ type: type, texte: texte });
+    }
+    i = 0; j = 0;
+    while (i < n && j < m) {
+      if (x[i] === y[j]) { ajouter("=", x[i]); i++; j++; }
+      else if (L[i + 1][j] >= L[i][j + 1]) { ajouter("-", x[i]); i++; }
+      else { ajouter("+", y[j]); j++; }
+    }
+    while (i < n) ajouter("-", x[i++]);
+    while (j < m) ajouter("+", y[j++]);
+    return morceaux;
+  }
+  function afficherResultat() {
+    var r = redac.resultat, sortie = $("redac-sortie");
+    sortie.replaceChildren();
+    if (redac.vue === "diff") {
+      var morceaux = differences(redac.source, r.texte);
+      if (!morceaux) sortie.textContent = r.texte;
+      else morceaux.forEach(function (mc) {
+        if (mc.type === "=") sortie.appendChild(document.createTextNode(mc.texte));
+        else sortie.appendChild(el(mc.type === "+" ? "ins" : "del", null, mc.texte));
+      });
+    } else sortie.textContent = r.texte;
+    $("redac-voir-final").setAttribute("aria-pressed", String(redac.vue === "final"));
+    $("redac-voir-diff").setAttribute("aria-pressed", String(redac.vue === "diff"));
+    var ul = $("redac-fautes");
+    ul.replaceChildren();
+    (r.fautes || []).forEach(function (f) {
+      if (!f.avant && !f.apres) return;
+      var li = el("li");
+      var aa = el("span", "avant-apres");
+      aa.appendChild(el("del", null, f.avant || "∅"));
+      aa.appendChild(document.createTextNode(" → "));
+      aa.appendChild(el("ins", null, f.apres || "∅"));
+      li.appendChild(aa);
+      if (f.explication) li.appendChild(el("span", "explication", f.explication));
+      ul.appendChild(li);
+    });
+    ul.hidden = !ul.children.length;
+  }
+  $("redac-voir-final").addEventListener("click", function () { redac.vue = "final"; afficherResultat(); });
+  $("redac-voir-diff").addEventListener("click", function () { redac.vue = "diff"; afficherResultat(); });
+
+  var TITRES_TONS = { mail: "En mail pro", professionnel: "Plus pro", clair: "Plus clair", court: "Plus court", poli: "Plus poli", chaleureux: "Plus chaleureux", simple: "Plus simple" };
+  // Le texte copié est du texte brut : il garde ses retours à la ligne et prend la police du mail où on le colle
+  function nettoyerTexte(t) {
+    return String(t || "").replace(/\r\n?/g, "\n").replace(/\u00a0/g, " ").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  }
+  function copierParZone(texte) {
+    var zone = document.createElement("textarea");
+    zone.value = texte;
+    zone.setAttribute("readonly", "");
+    zone.style.position = "fixed"; zone.style.top = "-1000px"; zone.style.opacity = "0";
+    document.body.appendChild(zone);
+    zone.select(); zone.setSelectionRange(0, texte.length);
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    zone.remove();
+    return ok;
+  }
+  async function copierTexte(texte, silencieux) {
+    texte = nettoyerTexte(texte);
+    var ok = false;
+    try { await navigator.clipboard.writeText(texte); ok = true; } catch (e) { ok = copierParZone(texte); }
+    if (ok && !silencieux) avis("Texte copié, avec sa mise en page.");
+    return ok;
+  }
+  // Copie à la main depuis le résultat : on remplace la copie « mise en forme » par du texte brut
+  $("redac-sortie").addEventListener("copy", function (ev) {
+    if (!ev.clipboardData) return;
+    var sel = window.getSelection();
+    var texte = redac.vue === "diff" && redac.resultat ? redac.resultat.texte : (sel ? sel.toString() : "");
+    if (!texte) return;
+    ev.preventDefault();
+    ev.clipboardData.setData("text/plain", nettoyerTexte(texte));
+  });
+  // Texte collé dans la zone de saisie : on garde les paragraphes, on retire les espaces parasites des mails
+  $("redac-texte").addEventListener("paste", function (ev) {
+    var t = ev.clipboardData && ev.clipboardData.getData("text/plain");
+    if (!t) return;
+    ev.preventDefault();
+    var zone = $("redac-texte");
+    var debut = zone.selectionStart, fin = zone.selectionEnd;
+    var propre = t.replace(/\r\n?/g, "\n").replace(/\u00a0/g, " ");
+    zone.setRangeText(propre, debut, fin, "end");
+    majCompte();
+  });
+  var redactionEnCours = false;
+  async function lancerRedaction(demande) {
+    if (redactionEnCours) return;
+    var texte = $("redac-texte").value.trim();
+    if (!texte) { $("redac-texte").focus(); return avis("Colle ou écris d'abord un texte."); }
+    redactionEnCours = true;
+    $("redac-attente").hidden = false; $("redac-vide").hidden = true; $("redac-resultat").hidden = true;
+    var boutons = Array.from(document.querySelectorAll(".redac-actions button"));
+    var etatsBoutons = boutons.map(function (b) { return b.disabled; });
+    boutons.forEach(function (b) { b.disabled = true; });
+    try {
+      var r, titre;
+      if (demande.action === "corriger") {
+        r = await corrigerTexte(texte);
+        titre = r.fautes && r.fautes.length ? r.fautes.length + (r.fautes.length > 1 ? " corrections" : " correction") : (r.texte.trim() === texte ? "Aucune faute trouvée" : "Texte corrigé");
+      } else {
+        r = await appelerAssistant(Object.assign({ texte: texte }, demande));
+        titre = demande.action === "traduire" ? "Traduction en " + demande.langue
+          : demande.action === "libre" ? "Selon ta demande" : TITRES_TONS[demande.ton] || "Reformulé";
+      }
+      redac.source = texte;
+      redac.resultat = { texte: nettoyerTexte(r.texte), fautes: r.fautes || [] };
+      redac.vue = demande.action === "corriger" && redac.resultat.fautes.length ? "diff" : "final";
+      $("redac-titre").textContent = titre;
+      afficherResultat();
+      $("redac-resultat").hidden = false;
+      var copie = await copierTexte(redac.resultat.texte, true);
+      $("redac-copier").textContent = copie ? "Copié" : "Copier";
+      ajouterHistorique(titre, redac.resultat.texte);
+      if (window.matchMedia("(max-width: 700px)").matches) $("redac-resultat").scrollIntoView({ block: "start", behavior: "smooth" });
+    } catch (e) {
+      $("redac-vide").hidden = false;
+      avis(e.message === "non_configure" ? "Reformuler et traduire demandent la clé d'IA, pas encore installée."
+        : e.message === "trop_long" ? "Le texte est trop long (10 000 caractères au maximum)."
+        : e.message === "connexion" ? "Ta session a été fermée sur cet appareil : déconnecte-toi puis reconnecte-toi (bouton en haut à droite)."
+        : "Le service n'a pas répondu. Réessaie dans un instant.");
+    } finally {
+      $("redac-attente").hidden = true;
+      boutons.forEach(function (b, i) { b.disabled = etatsBoutons[i]; });
+      redactionEnCours = false;
+    }
+  }
+  $("redac-corriger").addEventListener("click", function () { lancerRedaction({ action: "corriger" }); });
+  $("redac-tons").addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-ton]"); if (b) lancerRedaction({ action: "reformuler", ton: b.dataset.ton });
+  });
+  $("redac-langues").addEventListener("click", function (ev) {
+    var b = ev.target.closest("[data-langue]"); if (b) lancerRedaction({ action: "traduire", langue: b.dataset.langue });
+  });
+  $("redac-libre").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var c = $("redac-consigne").value.trim();
+    if (!c) return $("redac-consigne").focus();
+    lancerRedaction({ action: "libre", consigne: c });
+  });
+  $("redac-copier").addEventListener("click", async function () {
+    if (!redac.resultat) return;
+    // Dans le geste du clic : copie immédiate (indispensable sur iPhone)
+    var texte = nettoyerTexte(redac.resultat.texte);
+    if (copierParZone(texte) || await copierTexte(texte, true)) {
+      $("redac-copier").textContent = "Copié";
+      avis("Texte copié, avec sa mise en page.");
+      return;
+    }
+    redac.vue = "final"; afficherResultat();
+    var plage = document.createRange(); plage.selectNodeContents($("redac-sortie"));
+    var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(plage);
+    avis("Texte sélectionné : copie-le avec Ctrl+C, Cmd+C ou un appui long.");
+  });
+  $("redac-garder").addEventListener("click", function () {
+    if (!redac.resultat) return;
+    $("redac-texte").value = redac.resultat.texte; majCompte();
+    $("redac-resultat").hidden = true; $("redac-vide").hidden = false;
+    $("redac-texte").focus();
+  });
+  $("redac-fil").addEventListener("click", function () {
+    if (!redac.resultat) return;
+    fermerRedaction();
+    $("texte").value = "";
+    mettreDansMessage(redac.resultat.texte, true);
+  });
+
+  // Historique : les 15 derniers résultats, gardés sur cet appareil seulement
+  async function chargerHistorique() {
+    try { redac.historique = JSON.parse((await memoire.getItem("fil-redac-histo")) || "[]"); } catch (e) { redac.historique = []; }
+    afficherHistorique();
+  }
+  function ajouterHistorique(titre, texte) {
+    redac.historique = [{ titre: titre, texte: texte, date: Date.now() }].concat(redac.historique.filter(function (x) { return x.texte !== texte; })).slice(0, 15);
+    memoire.setItem("fil-redac-histo", JSON.stringify(redac.historique));
+    afficherHistorique();
+  }
+  function afficherHistorique() {
+    var ul = $("redac-histo-liste");
+    ul.replaceChildren();
+    redac.historique.forEach(function (x) {
+      var li = el("li"), b = el("button");
+      b.type = "button";
+      b.appendChild(el("span", null, x.titre));
+      b.appendChild(document.createTextNode(x.texte.replace(/\s+/g, " ").slice(0, 120)));
+      b.addEventListener("click", function () {
+        redac.source = x.texte; redac.resultat = { texte: x.texte, fautes: [] }; redac.vue = "final";
+        $("redac-titre").textContent = x.titre;
+        afficherResultat();
+        $("redac-resultat").hidden = false; $("redac-vide").hidden = true;
+        $("redac-copier").textContent = "Copier";
+      });
+      li.appendChild(b); ul.appendChild(li);
+    });
+    $("redac-historique").hidden = !redac.historique.length;
+  }
+
+  // Session fermée ailleurs ou expirée : retour à l'accueil
+  sb.auth.onAuthStateChange(function (evenement) {
+    if (evenement === "SIGNED_OUT" && etat.moi) {
+      etat.moi = null;
+      clearInterval(etat.minuterie);
+      setTimeout(function () { ouvrirAccueil(); }, 0);
+    }
+  });
+
+  demarrer();
+})();
+</script>
+</body>
+</html>
